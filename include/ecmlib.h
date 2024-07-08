@@ -176,9 +176,6 @@ namespace ecmlib
         static inline void put32lsb(
             char *output,
             uint32_t value);
-        static inline void put32lsb(
-            char *utput,
-            uint32_t value);
         inline uint32_t edc_compute(
             const char *src,
             size_t size);

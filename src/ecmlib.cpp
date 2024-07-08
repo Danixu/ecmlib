@@ -96,6 +96,8 @@ namespace ecmlib
                 std::copy(_input_sector.begin(), _input_sector.end(), _output_sector.begin());
             }
         }
+
+        return STATUS_OK;
     }
 
     /**

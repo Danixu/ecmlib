@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 # list of source files
-set(libsrc src/ecmlib.cpp)
+set(libsrc src/ecmlib.base.cpp src/ecmlib.encoder.cpp)
 set(libincludes include)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) 

@@ -87,11 +87,10 @@
 // First sector address looks like is always 00:02:00, so we will use this number on it
 
 #include <stdint.h>
-#include <cstring>
 #include <vector>
 
-#ifndef __ECM_H__
-#define __ECM_H__
+#ifndef __ECMLIB_BASE_H__
+#define __ECMLIB_BASE_H__
 
 enum status_code : int8_t
 {
@@ -141,15 +140,14 @@ optimizations inline operator|(optimizations a, optimizations b)
 
 namespace ecmlib
 {
-    class processor
+    class base
     {
     public:
-        processor(optimizations opt);
-        ~processor();
-        status_code load(char *buffer, uint16_t toRead);
-        status_code optimize(bool force = false, bool onlyData = false);
+        base(optimizations opt);
+        ~base();
+        virtual status_code load(char *buffer, uint16_t toRead);
 
-    private:
+    protected:
         // Variables
         std::vector<char> _input_sector;
         uint16_t _input_sector_size = 0;
@@ -157,28 +155,40 @@ namespace ecmlib
         uint16_t _output_sector_size = 0;
         sector_type _sector_type = sector_type::ST_UNKNOWN;
         optimizations _optimizations = optimizations::OO_NONE;
-        // ECM variables
-        const uint8_t zeroaddress[4] = {0, 0, 0, 0};
-        // LUTs used for computing ECC/EDC
-        uint8_t ecc_f_lut[256];
-        uint8_t ecc_b_lut[256];
-        uint32_t edc_lut[256];
 
-        // Methods
-        bool inline is_gap(
-            char *sector,
-            size_t length);
-        sector_type detect();
-
-        // ecm tools
+        // ecm tools inline functions
         static inline uint32_t get32lsb(
-            const char *src);
+            const char *src)
+        {
+            return (uint32_t)(static_cast<uint8_t>(src[0]) << 0 |
+                              static_cast<uint8_t>(src[1]) << 8 |
+                              static_cast<uint8_t>(src[2]) << 16 |
+                              static_cast<uint8_t>(src[3]) << 24);
+        }
+
         static inline void put32lsb(
             char *output,
-            uint32_t value);
+            uint32_t value)
+        {
+            output[0] = (char)(value);
+            output[1] = (char)(value >> 8);
+            output[2] = (char)(value >> 16);
+            output[3] = (char)(value >> 24);
+        }
+
         inline uint32_t edc_compute(
             const char *src,
-            size_t size);
+            size_t size)
+        {
+            uint32_t edc = 0;
+            for (; size; size--)
+            {
+                edc = (edc >> 8) ^ edc_lut[(edc ^ (*src++)) & 0xFF];
+            }
+            return edc;
+        }
+
+        // ecm tools
         int8_t ecc_checkpq(
             const uint8_t *address,
             const uint8_t *data,
@@ -203,6 +213,12 @@ namespace ecmlib
             const uint8_t *address,
             const uint8_t *data,
             uint8_t *ecc);
+
+    private:
+        // LUTs used for computing ECC/EDC
+        uint8_t ecc_f_lut[256];
+        uint8_t ecc_b_lut[256];
+        uint32_t edc_lut[256];
     };
 }
 

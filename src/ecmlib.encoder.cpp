@@ -1,4 +1,4 @@
-#include "ecmlib.h"
+#include "ecmlib.encoder.h"
 
 namespace ecmlib
 {
@@ -6,35 +6,15 @@ namespace ecmlib
      * @brief Construct a new processor::processor object to process the CD-ROM sectors
      *
      */
-    processor::processor(optimizations opt)
+    encoder::encoder(optimizations opt) : base(opt)
     {
-        // Initialize the buffers
-        _input_sector.resize(2352, 0);
-        _output_sector.resize(2352, 0);
-        // Set the optimizations
-        _optimizations = opt;
-
-        // Generate the ECM edc and ecc data
-        size_t i;
-        for (i = 0; i < 256; i++)
-        {
-            uint32_t edc = i;
-            size_t j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
-            ecc_f_lut[i] = j;
-            ecc_b_lut[i ^ j] = i;
-            for (j = 0; j < 8; j++)
-            {
-                edc = (edc >> 1) ^ (edc & 1 ? 0xD8018001 : 0);
-            }
-            edc_lut[i] = edc;
-        }
     }
 
     /**
      * @brief Object cleanup
      *
      */
-    processor::~processor()
+    encoder::~encoder()
     {
     }
 
@@ -43,7 +23,7 @@ namespace ecmlib
      *
      * @return Returns a ecmlib::sector_type value with the detected sector type.
      */
-    status_code processor::load(char *buffer, uint16_t toRead)
+    status_code encoder::load(char *buffer, uint16_t toRead)
     {
         if (toRead > 2352)
         {
@@ -73,7 +53,7 @@ namespace ecmlib
      * @param onlyData Remove all except the data from the sector
      * @return status_code Status code
      */
-    status_code processor::optimize(bool force, bool onlyData)
+    status_code encoder::optimize(bool force, bool onlyData)
     {
         // Check if the sector was loaded
         if (_input_sector_size == 0)
@@ -108,7 +88,7 @@ namespace ecmlib
      * @return true The sectors are a gap
      * @return false Any or all sectors are not zeroed, so is not a gap.
      */
-    bool inline processor::is_gap(char *sector, size_t length)
+    bool inline encoder::is_gap(char *sector, size_t length)
     {
         for (size_t i = 0; i < length; i++)
         {
@@ -121,7 +101,7 @@ namespace ecmlib
         return true;
     }
 
-    sector_type processor::detect()
+    sector_type encoder::detect()
     {
         if (
             _input_sector[0x000] == (char)0x00 && // sync (12 bytes)
@@ -241,142 +221,5 @@ namespace ecmlib
         }
 
         return ST_UNKNOWN;
-    }
-
-    inline uint32_t processor::get32lsb(const char *src)
-    {
-        return (uint32_t)(static_cast<uint8_t>(src[0]) << 0 |
-                          static_cast<uint8_t>(src[1]) << 8 |
-                          static_cast<uint8_t>(src[2]) << 16 |
-                          static_cast<uint8_t>(src[3]) << 24);
-    }
-
-    inline void processor::put32lsb(char *output, uint32_t value)
-    {
-        output[0] = (char)(value);
-        output[1] = (char)(value >> 8);
-        output[2] = (char)(value >> 16);
-        output[3] = (char)(value >> 24);
-    }
-
-    inline uint32_t processor::edc_compute(
-        const char *src,
-        size_t size)
-    {
-        uint32_t edc = 0;
-        for (; size; size--)
-        {
-            edc = (edc >> 8) ^ edc_lut[(edc ^ (*src++)) & 0xFF];
-        }
-        return edc;
-    }
-
-    int8_t processor::ecc_checkpq(
-        const uint8_t *address,
-        const uint8_t *data,
-        size_t majorCount,
-        size_t minorCount,
-        size_t majorMult,
-        size_t minorInc,
-        const uint8_t *ecc)
-    {
-        size_t size = majorCount * minorCount;
-        size_t major;
-        for (major = 0; major < majorCount; major++)
-        {
-            size_t index = (major >> 1) * majorMult + (major & 1);
-            uint8_t ecc_a = 0;
-            uint8_t ecc_b = 0;
-            size_t minor;
-            for (minor = 0; minor < minorCount; minor++)
-            {
-                uint8_t temp;
-                if (index < 4)
-                {
-                    temp = address[index];
-                }
-                else
-                {
-                    temp = data[index - 4];
-                }
-                index += minorInc;
-                if (index >= size)
-                {
-                    index -= size;
-                }
-                ecc_a ^= temp;
-                ecc_b ^= temp;
-                ecc_a = ecc_f_lut[ecc_a];
-            }
-            ecc_a = ecc_b_lut[ecc_f_lut[ecc_a] ^ ecc_b];
-            if (
-                ecc[major] != (ecc_a) ||
-                ecc[major + majorCount] != (ecc_a ^ ecc_b))
-            {
-                return 0;
-            }
-        }
-        return 1;
-    }
-
-    void processor::ecc_write_pq(
-        const uint8_t *address,
-        const uint8_t *data,
-        size_t majorCount,
-        size_t minorCount,
-        size_t majorMult,
-        size_t minorInc,
-        uint8_t *ecc)
-    {
-        size_t size = majorCount * minorCount;
-        size_t major;
-        for (major = 0; major < majorCount; major++)
-        {
-            size_t index = (major >> 1) * majorMult + (major & 1);
-            uint8_t ecc_a = 0;
-            uint8_t ecc_b = 0;
-            size_t minor;
-            for (minor = 0; minor < minorCount; minor++)
-            {
-                uint8_t temp;
-                if (index < 4)
-                {
-                    temp = address[index];
-                }
-                else
-                {
-                    temp = data[index - 4];
-                }
-                index += minorInc;
-                if (index >= size)
-                {
-                    index -= size;
-                }
-                ecc_a ^= temp;
-                ecc_b ^= temp;
-                ecc_a = ecc_f_lut[ecc_a];
-            }
-            ecc_a = ecc_b_lut[ecc_f_lut[ecc_a] ^ ecc_b];
-            ecc[major] = (ecc_a);
-            ecc[major + majorCount] = (ecc_a ^ ecc_b);
-        }
-    }
-
-    int8_t processor::ecc_check_sector(
-        const uint8_t *address,
-        const uint8_t *data,
-        const uint8_t *ecc)
-    {
-        return ecc_checkpq(address, data, 86, 24, 2, 86, ecc) &&       // P
-               ecc_checkpq(address, data, 52, 43, 86, 88, ecc + 0xAC); // Q
-    }
-
-    void processor::ecc_write_sector(
-        const uint8_t *address,
-        const uint8_t *data,
-        uint8_t *ecc)
-    {
-        ecc_write_pq(address, data, 86, 24, 2, 86, ecc);         // P
-        ecc_write_pq(address, data, 52, 43, 86, 88, ecc + 0xAC); // Q
     }
 }

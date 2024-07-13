@@ -1,36 +1,12 @@
 cmake_minimum_required(VERSION 3.27)
 
-# list of source files
-set(libsrc src/ecmlib.base.cpp src/ecmlib.encoder.cpp)
-set(libincludes include)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Project name and a few useful settings. Other commands can pick up the results
-project(
-  ecmlib
-  VERSION 0.1.0
-  DESCRIPTION "ECM blocks management library"
-  LANGUAGES C CXX)
-
-# this is the "object library" target: compiles the sources only once
-add_library(objlib OBJECT ${libsrc})
-
-set_target_properties(objlib PROPERTIES CXX_STANDARD 17)
-set_target_properties(objlib PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(objlib PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
-set_target_properties(objlib PROPERTIES PUBLIC_HEADER include/ecmlib.h)
-# shared libraries need PIC
-set_property(TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
-target_include_directories(objlib PRIVATE include)
-
-
-# shared and static libraries built from the same object files
-add_library(ecmlib_shared SHARED $<TARGET_OBJECTS:objlib>)
-set_target_properties(ecmlib_shared PROPERTIES OUTPUT_NAME "ecm")
-add_library(ecmlib_static STATIC $<TARGET_OBJECTS:objlib>)
-set_target_properties(ecmlib_static PROPERTIES OUTPUT_NAME "ecm")
+project(MAIN)
+add_subdirectory(src)
+add_subdirectory(tests)
 
 #if(NOT CMAKE_BUILD_TYPE)
 #  set(CMAKE_BUILD_TYPE Release)

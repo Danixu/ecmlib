@@ -1,0 +1,5 @@
+add_executable(TESTS tests.cpp)
+target_link_libraries(TESTS PRIVATE ecmlib_static)
+target_include_directories(TESTS PUBLIC ../include)
+set_target_properties(TESTS PROPERTIES CXX_STANDARD 17)
+set_target_properties(TESTS PROPERTIES OUTPUT_NAME "test")

@@ -48,3 +48,7 @@ output/**
 **/compile_commands.json
 build/
 **/DartConfiguration.tcl
+
+# Output folders
+lib/
+bin/

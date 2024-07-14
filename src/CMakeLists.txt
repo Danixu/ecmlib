@@ -7,8 +7,8 @@ project(
   DESCRIPTION "ECM blocks management library"
   LANGUAGES C CXX)
   
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output)
 
 set(libsrc ecmlib.base.cpp ecmlib.encoder.cpp)
 

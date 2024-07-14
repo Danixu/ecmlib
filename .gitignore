@@ -52,3 +52,4 @@ build/
 # Output folders
 lib/
 bin/
+output/

@@ -88,6 +88,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include "spdlog/spdlog.h"
 
 #ifndef __ECMLIB_BASE_H__
 #define __ECMLIB_BASE_H__
@@ -219,6 +220,9 @@ namespace ecmlib
         uint8_t ecc_f_lut[256];
         uint8_t ecc_b_lut[256];
         uint32_t edc_lut[256];
+
+        // Logging
+        std::shared_ptr<spdlog::logger> m_logger;   
     };
 }
 

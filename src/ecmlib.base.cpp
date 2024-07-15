@@ -23,14 +23,14 @@ namespace ecmlib
         m_logger->debug("Initializing base class.");
 
         // Initialize the buffers
-        m_logger->debug("Creating the read/write buffers.");
+        m_logger->trace("Creating the read/write buffers.");
         _input_sector.resize(2352, 0);
         _output_sector.resize(2352, 0);
         // Set the optimizations
         _optimizations = opt;
 
         // Generate the ECM edc and ecc data
-        m_logger->debug("Generating required ecc and edc data.");
+        m_logger->trace("Generating required ecc and edc data.");
         size_t i;
         for (i = 0; i < 256; i++)
         {

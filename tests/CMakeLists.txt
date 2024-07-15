@@ -14,3 +14,7 @@ add_executable(tests_shared tests.cpp)
 set_target_properties(tests_shared PROPERTIES CXX_STANDARD 17)
 target_link_libraries(tests_shared PRIVATE ecmlib_shared)
 target_include_directories(tests_shared PUBLIC "../src" "../libs/spdlog/include")
+
+## Copy the binary files for testing
+configure_file("mode1_gap.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)
+configure_file("mode2.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)

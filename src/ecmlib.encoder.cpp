@@ -8,9 +8,9 @@ namespace ecmlib
      */
     encoder::encoder(optimizations opt) : base(opt)
     {
-        m_logger->trace("Initializing encoder class.");
+        m_logger->debug("Initializing encoder class.");
 
-        m_logger->trace("Finished the encoder class inizialization.");
+        m_logger->debug("Finished the encoder class inizialization.");
     }
 
     /**
@@ -38,7 +38,7 @@ namespace ecmlib
         else if (toRead < 2352)
         {
             // For now the module doesn't accepts incremental loading
-            m_logger->error("The provided data is less than a sector.");
+            m_logger->error("The provided data is less than a sector ({} bytes).", toRead);
             return STATUS_ERROR_NO_ENOUGH_DATA;
         }
 
@@ -55,7 +55,7 @@ namespace ecmlib
         {
             m_logger->debug("Determining the sector type");
             _sector_type = detect();
-            m_logger->debug("Detected a sector of the type %d.", (uint8_t)_sector_type);
+            m_logger->debug("Detected a sector of the type {}.", (uint8_t)_sector_type);
         }
 
         m_logger->trace("Data loaded correctly.");
@@ -71,7 +71,7 @@ namespace ecmlib
      */
     status_code encoder::optimize(bool force, bool onlyData)
     {
-        m_logger->debug("Optimizing the sector...\nForce: %d\nOnly Data: %d", force, onlyData);
+        m_logger->debug("Optimizing the sector...\nForce: {}\nOnly Data: {}", force, onlyData);
         // Check if the sector was loaded
         if (_input_sector_size == 0)
         {
@@ -122,17 +122,17 @@ namespace ecmlib
      */
     bool inline encoder::is_gap(char *sector, size_t length)
     {
-        m_logger->trace("Checking if the sector is a gap sector");
+        m_logger->trace("Checking {} bytes for a gap.", length);
         for (size_t i = 0; i < length; i++)
         {
             if ((sector[i]) != 0x00)
             {
-                m_logger->trace("Sector contains data, so is not a gap sector.");
+                m_logger->trace("Received data is not a GAP.");
                 return false; // Sector contains data, so is not a GAP
             }
         }
 
-        m_logger->trace("Sector doesn't contain any data, so is a gap.");
+        m_logger->trace("Received data is a GAP.");
         return true;
     }
 

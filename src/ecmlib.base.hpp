@@ -136,8 +136,8 @@ namespace ecmlib
         OO_REMOVE_ECC = 1 << 5,            // Remove the ECC
         OO_REMOVE_EDC = 1 << 6,            // Remove the EDC
         OO_REMOVE_GAP = 1 << 7             // If sector type is a GAP, remove the data
-
     };
+
     optimizations inline operator|(optimizations a, optimizations b)
     {
         return static_cast<optimizations>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));

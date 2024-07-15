@@ -86,7 +86,7 @@
 //
 // First sector address looks like is always 00:02:00, so we will use this number on it
 
-#include "ecmlib.base.h"
+#include "ecmlib.base.hpp"
 #include <cstring>
 
 #ifndef __ECMLIB_ENCODER_H__

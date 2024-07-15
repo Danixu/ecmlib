@@ -93,60 +93,65 @@
 #ifndef __ECMLIB_BASE_H__
 #define __ECMLIB_BASE_H__
 
-enum status_code : int8_t
-{
-    STATUS_ERROR_UNKNOWN_ERROR = -127,
-    STATUS_ERROR_NO_DATA,        // The sector was not loaded in the library
-    STATUS_ERROR_NO_ENOUGH_DATA, // The provided data is incomplete
-    STATUS_ERROR_TOO_MUCH_DATA,  // Too much data provided to the lib
-
-    STATUS_OK = 0
-};
-
-enum sector_type : uint8_t
-{
-    ST_UNKNOWN = 0,
-    ST_CDDA,
-    ST_CDDA_GAP,
-    ST_MODE1,
-    ST_MODE1_GAP,
-    ST_MODE1_RAW,
-    ST_MODE2,
-    ST_MODE2_GAP,
-    ST_MODE2_XA_GAP, // Detected in some games. The sector contains the XA flags, but is fully zeroed including the EDC/ECC data, then will be detected as non GAP Mode2 sector
-    ST_MODE2_XA1,
-    ST_MODE2_XA1_GAP,
-    ST_MODE2_XA2,
-    ST_MODE2_XA2_GAP,
-    ST_MODEX
-};
-
-enum optimizations : uint8_t
-{
-    OO_NONE = 0,                       // Just copy the input. Surelly will not be used
-    OO_REMOVE_SYNC = 1,                // Remove sync bytes (a.k.a first 12 bytes)
-    OO_REMOVE_MSF = 1 << 1,            // Remove the MSF bytes
-    OO_REMOVE_MODE = 1 << 2,           // Remove the MODE byte
-    OO_REMOVE_BLANKS = 1 << 3,         // Remove the Mode 1 zeroed section of the sector
-    OO_REMOVE_REDUNDANT_FLAG = 1 << 4, // Remove the redundant copy of FLAG bytes in Mode 2 XA sectors
-    OO_REMOVE_ECC = 1 << 5,            // Remove the ECC
-    OO_REMOVE_EDC = 1 << 6,            // Remove the EDC
-    OO_REMOVE_GAP = 1 << 7             // If sector type is a GAP, remove the data
-
-};
-optimizations inline operator|(optimizations a, optimizations b)
-{
-    return static_cast<optimizations>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
-}
-
 namespace ecmlib
 {
+    const std::string ecmLoggerName = "ecmlib";
+
+    enum status_code : int8_t
+    {
+        STATUS_ERROR_UNKNOWN_ERROR = -127,
+        STATUS_ERROR_NO_DATA,        // The sector was not loaded in the library
+        STATUS_ERROR_NO_ENOUGH_DATA, // The provided data is incomplete
+        STATUS_ERROR_TOO_MUCH_DATA,  // Too much data provided to the lib
+
+        STATUS_OK = 0
+    };
+
+    enum sector_type : uint8_t
+    {
+        ST_UNKNOWN = 0,
+        ST_CDDA,
+        ST_CDDA_GAP,
+        ST_MODE1,
+        ST_MODE1_GAP,
+        ST_MODE1_RAW,
+        ST_MODE2,
+        ST_MODE2_GAP,
+        ST_MODE2_XA_GAP, // Detected in some games. The sector contains the XA flags, but is fully zeroed including the EDC/ECC data, then will be detected as non GAP Mode2 sector
+        ST_MODE2_XA1,
+        ST_MODE2_XA1_GAP,
+        ST_MODE2_XA2,
+        ST_MODE2_XA2_GAP,
+        ST_MODEX
+    };
+
+    enum optimizations : uint8_t
+    {
+        OO_NONE = 0,                       // Just copy the input. Surelly will not be used
+        OO_REMOVE_SYNC = 1,                // Remove sync bytes (a.k.a first 12 bytes)
+        OO_REMOVE_MSF = 1 << 1,            // Remove the MSF bytes
+        OO_REMOVE_MODE = 1 << 2,           // Remove the MODE byte
+        OO_REMOVE_BLANKS = 1 << 3,         // Remove the Mode 1 zeroed section of the sector
+        OO_REMOVE_REDUNDANT_FLAG = 1 << 4, // Remove the redundant copy of FLAG bytes in Mode 2 XA sectors
+        OO_REMOVE_ECC = 1 << 5,            // Remove the ECC
+        OO_REMOVE_EDC = 1 << 6,            // Remove the EDC
+        OO_REMOVE_GAP = 1 << 7             // If sector type is a GAP, remove the data
+
+    };
+    optimizations inline operator|(optimizations a, optimizations b)
+    {
+        return static_cast<optimizations>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+    }
+
     class base
     {
     public:
         base(optimizations opt);
         ~base();
-        virtual status_code load(char *buffer, uint16_t toRead);
+        virtual status_code load(char *buffer, uint16_t toRead) { return STATUS_ERROR_UNKNOWN_ERROR; };
+
+        // Methods
+        static std::string loggerName();
 
     protected:
         // Variables
@@ -156,6 +161,8 @@ namespace ecmlib
         uint16_t _output_sector_size = 0;
         sector_type _sector_type = sector_type::ST_UNKNOWN;
         optimizations _optimizations = optimizations::OO_NONE;
+        // Logging
+        std::shared_ptr<spdlog::logger> m_logger;
 
         // ecm tools inline functions
         static inline uint32_t get32lsb(
@@ -220,9 +227,6 @@ namespace ecmlib
         uint8_t ecc_f_lut[256];
         uint8_t ecc_b_lut[256];
         uint32_t edc_lut[256];
-
-        // Logging
-        std::shared_ptr<spdlog::logger> m_logger;   
     };
 }
 

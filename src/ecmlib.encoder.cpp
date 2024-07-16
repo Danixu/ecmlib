@@ -28,7 +28,7 @@ namespace ecmlib
      */
     status_code encoder::load(char *buffer, uint16_t toRead)
     {
-        mLogger->trace("Loading data into the buffer.");
+        mLogger->debug("Loading data into the buffer.");
         if (toRead > 2352)
         {
             // passed data is too big
@@ -43,22 +43,24 @@ namespace ecmlib
         }
 
         // Clear the input sector data
-        mLogger->trace("Clearing the buffer data");
+        mLogger->trace("Clearing the buffer data and the sector type");
         std::fill(_inputSector.begin(), _inputSector.end(), 0);
+        // Set the type to Unknown
+        _sectorType = ST_UNKNOWN;
         // Copy the data to the input block
         mLogger->trace("Copying the data to the buffer");
         std::memcpy(_inputSector.data(), buffer, toRead);
         _inputSectorSize = toRead;
 
         // Try to determine the sector type only if a full sector is provided
-        if (toRead == 2352)
-        {
-            mLogger->debug("Determining the sector type");
-            _sectorType = detect();
-            mLogger->debug("Detected a sector of the type {}.", (uint8_t)_sectorType);
-        }
+        // if (toRead == 2352)
+        //{
+        mLogger->trace("Determining the sector type");
+        _sectorType = detect();
+        mLogger->trace("Detected a sector of the type {}.", (uint8_t)_sectorType);
+        //}
 
-        mLogger->trace("Data loaded correctly.");
+        mLogger->debug("Data loaded correctly.");
         return STATUS_OK;
     }
 
@@ -138,7 +140,7 @@ namespace ecmlib
 
     sector_type encoder::detect()
     {
-        mLogger->trace("Detecting the sector type.");
+        mLogger->debug("Detecting the sector type.");
         if (
             _inputSector[0x000] == (char)0x00 && // sync (12 bytes)
             _inputSector[0x001] == (char)0xFF &&
@@ -178,12 +180,12 @@ namespace ecmlib
                     mLogger->trace("Mode 1 sector detected. Determining if it's a GAP.");
                     if (is_gap(_inputSector.data() + 0x010, 0x800))
                     {
-                        mLogger->trace("The sector is at Mode 1 GAP.");
+                        mLogger->debug("The sector is at Mode 1 GAP.");
                         return ST_MODE1_GAP;
                     }
                     else
                     {
-                        mLogger->trace("The sector is at Mode 1.");
+                        mLogger->debug("The sector is at Mode 1.");
                         return ST_MODE1; // Mode 1
                     }
                 }
@@ -211,12 +213,12 @@ namespace ecmlib
                     mLogger->trace("Mode 2 XA 1 detected. Checking if it's a GAP.");
                     if (is_gap(_inputSector.data() + 0x018, 0x800))
                     {
-                        mLogger->trace("The sector is at Mode 2 XA 1 GAP.");
+                        mLogger->debug("The sector is at Mode 2 XA 1 GAP.");
                         return ST_MODE2_XA1_GAP;
                     }
                     else
                     {
-                        mLogger->trace("The sector is at Mode 2 XA 1.");
+                        mLogger->debug("The sector is at Mode 2 XA 1.");
                         return ST_MODE2_XA1; //  Mode 2, XA 1
                     }
                 }
@@ -229,12 +231,12 @@ namespace ecmlib
                     mLogger->trace("Mode 2 XA 2 detected. Checking if it's a GAP.");
                     if (is_gap(_inputSector.data() + 0x018, 0x914))
                     {
-                        mLogger->trace("The sector is at Mode 2 XA 2 GAP.");
+                        mLogger->debug("The sector is at Mode 2 XA 2 GAP.");
                         return ST_MODE2_XA2_GAP;
                     }
                     else
                     {
-                        mLogger->trace("The sector is at Mode 2 XA 2.");
+                        mLogger->debug("The sector is at Mode 2 XA 2.");
                         return ST_MODE2_XA2; // Mode 2, XA 2
                     }
                 }
@@ -244,18 +246,18 @@ namespace ecmlib
                 mLogger->trace("The sector might be a non XA Mode 2 sector. Determining if it's a GAP.");
                 if (is_gap(_inputSector.data() + 0x010, 0x920))
                 {
-                    mLogger->trace("The sector is at Mode 2 GAP.");
+                    mLogger->debug("The sector is at Mode 2 GAP.");
                     return ST_MODE2_GAP;
                 }
                 else
                 {
-                    mLogger->trace("The sector is at Mode 2.");
+                    mLogger->debug("The sector is at Mode 2.");
                     return ST_MODE2;
                 }
             }
 
             // Data sector detected but was not possible to determine the mode. Maybe is a copy protection sector.
-            mLogger->trace("Unable to determine the type of sector. Unknown sector mode returned.");
+            mLogger->warn("Unable to determine the type of sector. Unknown sector mode returned.");
             return ST_MODEX;
         }
         else
@@ -264,17 +266,17 @@ namespace ecmlib
             mLogger->trace("Sync data not detected. Sector will be RAW (a.k.a CDDA). Checking if it's a GAP.");
             if (is_gap(_inputSector.data(), 0x930))
             {
-                mLogger->trace("The sector is a CDDA GAP.");
+                mLogger->debug("The sector is a CDDA GAP.");
                 return ST_CDDA_GAP;
             }
             else
             {
-                mLogger->trace("The sector is a CDDA.");
+                mLogger->debug("The sector is a CDDA.");
                 return ST_CDDA;
             }
         }
 
-        mLogger->trace("Unable to determine the sector type. Report this to the developer because this might not happen.");
+        mLogger->warn("Unable to determine the sector type. Report this to the developer because this might not happen.");
         return ST_UNKNOWN;
     }
 }

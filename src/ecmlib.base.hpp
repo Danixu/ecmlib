@@ -151,18 +151,18 @@ namespace ecmlib
         virtual status_code load(char *buffer, uint16_t toRead) { return STATUS_ERROR_UNKNOWN_ERROR; };
 
         // Methods
-        static std::string loggerName();
+        static std::string logger_name();
 
     protected:
         // Variables
-        std::vector<char> _input_sector;
-        uint16_t _input_sector_size = 0;
-        std::vector<char> _output_sector;
-        uint16_t _output_sector_size = 0;
-        sector_type _sector_type = sector_type::ST_UNKNOWN;
+        std::vector<char> _inputSector;
+        uint16_t _inputSectorSize = 0;
+        std::vector<char> _outputSector;
+        uint16_t _outputSectorSize = 0;
+        sector_type _sectorType = sector_type::ST_UNKNOWN;
         optimizations _optimizations = optimizations::OO_NONE;
         // Logging
-        std::shared_ptr<spdlog::logger> m_logger;
+        std::shared_ptr<spdlog::logger> mLogger;
 
         // ecm tools inline functions
         static inline uint32_t get32lsb(

@@ -7,14 +7,14 @@
 struct testData
 {
     std::string file;
-    uint8_t type;
+    ecmlib::sector_type type;
 };
 
 int main(int argc, char *argv[])
 {
     // create loggers
     auto appLogger = spdlog::stdout_logger_mt("app_logger");
-    auto libLogger = spdlog::stdout_logger_mt(ecmlib::encoder::loggerName());
+    auto libLogger = spdlog::stdout_logger_mt(ecmlib::encoder::logger_name());
     libLogger->set_level(spdlog::level::trace);
 
     // Input buffer
@@ -25,8 +25,8 @@ int main(int argc, char *argv[])
 
     // Checking the mode of the following files
     std::vector<testData> filesToCheck = {
-        {"mode1_gap.bin", 4},
-        {"mode2.bin", 6}};
+        {"mode1_gap.bin", ecmlib::ST_MODE1_GAP},
+        {"mode2.bin", ecmlib::ST_MODE2}};
 
     for (uint8_t i = 0; i < filesToCheck.size(); i++)
     {
@@ -44,7 +44,16 @@ int main(int argc, char *argv[])
         }
 
         ecmEncoder.load(buffer.data(), buffer.size());
-        // appLogger->info("The detected sector type is {}.", ecmEncoder.loggerName());
+        appLogger->info("The detected sector type is {}.", (uint8_t)ecmEncoder.get_sector_type());
+        if (ecmEncoder.get_sector_type() == filesToCheck[i].type)
+        {
+            appLogger->info("The detected sector type matches.");
+        }
+        else
+        {
+            appLogger->error("The detected sector type doesn't matches the expected one ({}).", (uint8_t)filesToCheck[i].type);
+            return 1;
+        }
     }
 
     return 0;

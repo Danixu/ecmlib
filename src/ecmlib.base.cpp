@@ -10,27 +10,27 @@ namespace ecmlib
     base::base(optimizations opt)
     {
         // Initialize the logger
-        m_logger = spdlog::get(ecmLoggerName);
+        mLogger = spdlog::get(ecmLoggerName);
         // Check if the logger exists or segfault will happen when used
-        if (m_logger == nullptr)
+        if (mLogger == nullptr)
         {
             // Doesn't exists, so a new logger with level off will be created.
             auto libLogger = spdlog::stdout_logger_mt(ecmLoggerName);
             libLogger->set_level(spdlog::level::off);
             // Return the new created logger
-            m_logger = spdlog::get(ecmLoggerName);
+            mLogger = spdlog::get(ecmLoggerName);
         }
-        m_logger->debug("Initializing base class.");
+        mLogger->debug("Initializing base class.");
 
         // Initialize the buffers
-        m_logger->trace("Creating the read/write buffers.");
-        _input_sector.resize(2352, 0);
-        _output_sector.resize(2352, 0);
+        mLogger->trace("Creating the read/write buffers.");
+        _inputSector.resize(2352, 0);
+        _outputSector.resize(2352, 0);
         // Set the optimizations
         _optimizations = opt;
 
         // Generate the ECM edc and ecc data
-        m_logger->trace("Generating required ecc and edc data.");
+        mLogger->trace("Generating required ecc and edc data.");
         size_t i;
         for (i = 0; i < 256; i++)
         {
@@ -45,7 +45,7 @@ namespace ecmlib
             edc_lut[i] = edc;
         }
 
-        m_logger->debug("Finished the base initialization.");
+        mLogger->debug("Finished the base initialization.");
     }
 
     /**
@@ -165,7 +165,7 @@ namespace ecmlib
         ecc_write_pq(address, data, 52, 43, 86, 88, ecc + 0xAC); // Q
     }
 
-    std::string base::loggerName()
+    std::string base::logger_name()
     {
         return ecmLoggerName;
     }

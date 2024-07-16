@@ -97,10 +97,12 @@ namespace ecmlib
     class encoder : public base
     {
     public:
+        // Public Methods
         encoder(optimizations opt);
         ~encoder();
         status_code load(char *buffer, uint16_t toRead);
         status_code optimize(bool force = false, bool onlyData = false);
+        sector_type inline get_sector_type() { return _sectorType; };
 
     private:
         // ECM variables

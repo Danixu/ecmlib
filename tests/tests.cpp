@@ -25,8 +25,11 @@ int main(int argc, char *argv[])
 
     // Checking the mode of the following files
     std::vector<testData> filesToCheck = {
+        {"mode1.bin", ecmlib::ST_MODE1},
         {"mode1_gap.bin", ecmlib::ST_MODE1_GAP},
-        {"mode2.bin", ecmlib::ST_MODE2}};
+        {"mode2.bin", ecmlib::ST_MODE2},
+        {"mode2_xa1.bin", ecmlib::ST_MODE2_XA1},
+        {"mode2_xa1_gap.bin", ecmlib::ST_MODE2_XA1_GAP}};
 
     for (uint8_t i = 0; i < filesToCheck.size(); i++)
     {
@@ -44,7 +47,7 @@ int main(int argc, char *argv[])
         }
 
         ecmEncoder.load(buffer.data(), buffer.size());
-        appLogger->info("The detected sector type is {}.", (uint8_t)ecmEncoder.get_sector_type());
+        appLogger->info("The expected type is {} and the detected type is {}.", (uint8_t)filesToCheck[i].type, (uint8_t)ecmEncoder.get_sector_type());
         if (ecmEncoder.get_sector_type() == filesToCheck[i].type)
         {
             appLogger->info("The detected sector type matches.");

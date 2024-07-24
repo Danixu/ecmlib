@@ -92,21 +92,73 @@ namespace ecmlib
         if (onlyData)
         {
             mLogger->trace("OnlyData mode activated. Only data will be sent to the output.");
-            // Copy the data block to the output
+            // Any GAP sector when the optimization OO_REMOVE_GAP is enabled, must be 0
+            if ((_optimizations & OO_REMOVE_GAP) &&
+                (_sectorType == ST_CDDA_GAP ||
+                 _sectorType == ST_MODE1_GAP ||
+                 _sectorType == ST_MODE2_GAP ||
+                 _sectorType == ST_MODE2_XA_GAP ||
+                 _sectorType == ST_MODE2_XA1_GAP ||
+                 _sectorType == ST_MODE2_XA2_GAP))
+            {
+                mLogger->trace("The sector is a GAP sector with the OO_REMOVE_GAP optimization enabled, so no data will be copied");
+                _outputSectorSize = 0;
+                return STATUS_OK;
+            }
+            // Sector type CDDA
             if (_sectorType == ST_CDDA || _sectorType == ST_CDDA_GAP)
             {
-                mLogger->trace("The sector is a CDDA sector");
-                if (_sectorType == ST_CDDA || !(_optimizations & OO_REMOVE_GAP))
-                {
-                    mLogger->trace("The sector will be fully copied.");
-                    std::copy(_inputSector.begin(), _inputSector.end(), _outputSector.begin());
-                    _outputSectorSize = 2352;
-                }
-                else
-                {
-                    mLogger->trace("No data will be copied.");
-                    _outputSectorSize = 0;
-                }
+                mLogger->trace("The sector is a CDDA sector, so will be fully copied.");
+                std::copy(_inputSector.begin(), _inputSector.end(), _outputSector.begin());
+                _outputSectorSize = 2352;
+            }
+            // Sector type Mode1
+            if (_sectorType == ST_MODE1 || _sectorType == ST_MODE1_GAP)
+            {
+                mLogger->trace("The sector is a Mode1 sector. Data between 0x10 and 0x80F will be copied");
+                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x80F, _outputSector.begin());
+                _outputSectorSize = 0x80F - 0x10;
+            }
+            // ToDo:
+            // Sector type Mode1 RAW
+            if (_sectorType == ST_MODE1_RAW)
+            {
+                mLogger->trace("The sector is a Mode1 RAW sector. TODO!");
+            }
+            // Sector type Mode2
+            if (_sectorType == ST_MODE2 || _sectorType == ST_MODE2_GAP)
+            {
+                mLogger->trace("The sector is a Mode2 sector. Data between 0x10 and 0x92F will be copied");
+                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x92F, _outputSector.begin());
+                _outputSectorSize = 0x92F - 0x10;
+            }
+            // Sector type Mode2
+            if (_sectorType == ST_MODE2_XA_GAP)
+            {
+                mLogger->trace("The sector is a Mode2 XA GAP sector. Data between 0x19 and 0x92F will be copied");
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x92F, _outputSector.begin());
+                _outputSectorSize = 0x92F - 0x18;
+            }
+            // Sector type Mode2 XA Gap
+            if (_sectorType == ST_MODE2_XA_GAP)
+            {
+                mLogger->trace("The sector is a Mode2 XA GAP sector. Data between 0x19 and 0x92F will be copied");
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x92F, _outputSector.begin());
+                _outputSectorSize = 0x92F - 0x18;
+            }
+            // Sector type Mode2 XA1
+            if (_sectorType == ST_MODE2_XA1 || _sectorType == ST_MODE2_XA1_GAP)
+            {
+                mLogger->trace("The sector is a Mode2 XA1 sector. Data between 0x19 and 0x92F will be copied");
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x817, _outputSector.begin());
+                _outputSectorSize = 0x817 - 0x18;
+            }
+            // Sector type Mode2 XA2
+            if (_sectorType == ST_MODE2_XA2 || _sectorType == ST_MODE2_XA2_GAP)
+            {
+                mLogger->trace("The sector is a Mode2 XA2 sector. Data between 0x19 and 0x92F will be copied");
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x9BB, _outputSector.begin());
+                _outputSectorSize = 0x9BB - 0x18;
             }
         }
 
@@ -203,12 +255,10 @@ namespace ecmlib
                 // Might be Mode 2, XA 1 or 2
                 //
                 mLogger->trace("Mode 2 sector detected. Determining if XA 1 or XA 2.");
-                if (
-                    ecc_check_sector(
-                        zeroaddress,
-                        reinterpret_cast<uint8_t *>(_inputSector.data() + 0x10),
-                        reinterpret_cast<uint8_t *>(_inputSector.data() + 0x81C)) &&
-                    edc_compute(_inputSector.data(), 0x808) == get32lsb(_inputSector.data() + 0x818))
+                if (ecc_check_sector(zeroaddress,
+                                     reinterpret_cast<uint8_t *>(_inputSector.data()) + 0x10,
+                                     reinterpret_cast<uint8_t *>(_inputSector.data()) + 0x81C) &&
+                    edc_compute(_inputSector.data() + 0x10, 0x808) == get32lsb(_inputSector.data() + 0x818))
                 {
                     mLogger->trace("Mode 2 XA 1 detected. Checking if it's a GAP.");
                     if (is_gap(_inputSector.data() + 0x018, 0x800))
@@ -226,7 +276,7 @@ namespace ecmlib
                 // Might be Mode 2, XA 2
                 //
                 if (
-                    edc_compute(_inputSector.data(), 0x91C) == get32lsb(_inputSector.data() + 0x92C))
+                    edc_compute(_inputSector.data() + 0x10, 0x91C) == get32lsb(_inputSector.data() + 0x92C))
                 {
                     mLogger->trace("Mode 2 XA 2 detected. Checking if it's a GAP.");
                     if (is_gap(_inputSector.data() + 0x018, 0x914))

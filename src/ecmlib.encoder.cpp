@@ -96,7 +96,6 @@ namespace ecmlib
             if ((_optimizations & OO_REMOVE_GAP) &&
                 (_sectorType == ST_CDDA_GAP ||
                  _sectorType == ST_MODE1_GAP ||
-                 _sectorType == ST_MODE2_GAP ||
                  _sectorType == ST_MODE2_XA_GAP ||
                  _sectorType == ST_MODE2_XA1_GAP ||
                  _sectorType == ST_MODE2_XA2_GAP))
@@ -123,10 +122,12 @@ namespace ecmlib
             // Sector type Mode1 RAW
             if (_sectorType == ST_MODE1_RAW)
             {
-                mLogger->trace("The sector is a Mode1 RAW sector. TODO!");
+                mLogger->trace("The sector is a Mode1 RAW sector.");
+                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x92F, _outputSector.begin());
+                _outputSectorSize = 0x92F - 0x10;
             }
             // Sector type Mode2
-            if (_sectorType == ST_MODE2 || _sectorType == ST_MODE2_GAP)
+            if (_sectorType == ST_MODE2)
             {
                 mLogger->trace("The sector is a Mode2 sector. Data between 0x10 and 0x92F will be copied");
                 std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x92F, _outputSector.begin());
@@ -293,17 +294,8 @@ namespace ecmlib
 
                 // No XA detected, so the sector might be a Mode 2 standard sector
                 // Checking if it's a gap sector
-                mLogger->trace("The sector might be a non XA Mode 2 sector. Determining if it's a GAP.");
-                if (is_gap(_inputSector.data() + 0x010, 0x920))
-                {
-                    mLogger->debug("The sector is at Mode 2 GAP.");
-                    return ST_MODE2_GAP;
-                }
-                else
-                {
-                    mLogger->debug("The sector is at Mode 2.");
-                    return ST_MODE2;
-                }
+                mLogger->trace("The sector might be a non XA Mode 2 sector.");
+                return ST_MODE2;
             }
 
             // Data sector detected but was not possible to determine the mode. Maybe is a copy protection sector.

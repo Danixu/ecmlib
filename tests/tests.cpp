@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
         {"cdda_gap.bin", ecmlib::ST_CDDA_GAP},
         {"mode1.bin", ecmlib::ST_MODE1},
         {"mode1_gap.bin", ecmlib::ST_MODE1_GAP},
+        {"mode1_raw.bin", ecmlib::ST_MODE1_RAW},
         {"mode2.bin", ecmlib::ST_MODE2},
         {"mode2_xa1.bin", ecmlib::ST_MODE2_XA1},
         {"mode2_xa1_gap.bin", ecmlib::ST_MODE2_XA1_GAP}};

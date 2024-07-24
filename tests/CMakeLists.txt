@@ -16,6 +16,8 @@ target_link_libraries(tests_shared PRIVATE ecmlib_shared)
 target_include_directories(tests_shared PUBLIC "../src" "../libs/spdlog/include")
 
 ## Copy the binary files for testing
+configure_file("cdda.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)
+configure_file("cdda_gap.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)
 configure_file("mode1.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)
 configure_file("mode1_gap.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)
 configure_file("mode2.bin" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" COPYONLY)

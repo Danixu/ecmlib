@@ -256,8 +256,8 @@ namespace ecmlib
                 //
                 mLogger->trace("Mode 2 sector detected. Determining if XA 1 or XA 2.");
                 if (ecc_check_sector(zeroaddress,
-                                     reinterpret_cast<uint8_t *>(_inputSector.data()) + 0x10,
-                                     reinterpret_cast<uint8_t *>(_inputSector.data()) + 0x81C) &&
+                                     reinterpret_cast<uint8_t *>(_inputSector.data() + 0x10),
+                                     reinterpret_cast<uint8_t *>(_inputSector.data() + 0x81C)) &&
                     edc_compute(_inputSector.data() + 0x10, 0x808) == get32lsb(_inputSector.data() + 0x818))
                 {
                     mLogger->trace("Mode 2 XA 1 detected. Checking if it's a GAP.");

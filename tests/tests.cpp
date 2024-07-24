@@ -25,6 +25,8 @@ int main(int argc, char *argv[])
 
     // Checking the mode of the following files
     std::vector<testData> filesToCheck = {
+        {"cdda.bin", ecmlib::ST_CDDA},
+        {"cdda_gap.bin", ecmlib::ST_CDDA_GAP},
         {"mode1.bin", ecmlib::ST_MODE1},
         {"mode1_gap.bin", ecmlib::ST_MODE1_GAP},
         {"mode2.bin", ecmlib::ST_MODE2},

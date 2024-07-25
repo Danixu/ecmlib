@@ -112,19 +112,11 @@ namespace ecmlib
                 _outputSectorSize = 2352;
             }
             // Sector type Mode1
-            if (_sectorType == ST_MODE1 || _sectorType == ST_MODE1_GAP)
+            if (_sectorType == ST_MODE1 || _sectorType == ST_MODE1_GAP || _sectorType == ST_MODE1_RAW)
             {
                 mLogger->trace("The sector is a Mode1 sector. Data between 0x10 and 0x80F will be copied");
                 std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x80F, _outputSector.begin());
                 _outputSectorSize = 0x80F - 0x10;
-            }
-            // ToDo:
-            // Sector type Mode1 RAW
-            if (_sectorType == ST_MODE1_RAW)
-            {
-                mLogger->trace("The sector is a Mode1 RAW sector.");
-                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x92F, _outputSector.begin());
-                _outputSectorSize = 0x92F - 0x10;
             }
             // Sector type Mode2
             if (_sectorType == ST_MODE2)
@@ -132,13 +124,6 @@ namespace ecmlib
                 mLogger->trace("The sector is a Mode2 sector. Data between 0x10 and 0x92F will be copied");
                 std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x92F, _outputSector.begin());
                 _outputSectorSize = 0x92F - 0x10;
-            }
-            // Sector type Mode2
-            if (_sectorType == ST_MODE2_XA_GAP)
-            {
-                mLogger->trace("The sector is a Mode2 XA GAP sector. Data between 0x19 and 0x92F will be copied");
-                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x92F, _outputSector.begin());
-                _outputSectorSize = 0x92F - 0x18;
             }
             // Sector type Mode2 XA Gap
             if (_sectorType == ST_MODE2_XA_GAP)
@@ -182,7 +167,7 @@ namespace ecmlib
         {
             if ((sector[i]) != 0x00)
             {
-                mLogger->trace("Received data is not a GAP.");
+                mLogger->trace("Received data is not a GAP. Detected non gap at {}.", i);
                 return false; // Sector contains data, so is not a GAP
             }
         }
@@ -252,6 +237,29 @@ namespace ecmlib
             )
             {
                 //  The sector is MODE2, and now we will detect what kind
+                //
+                // Might be Mode 2 GAP.
+                //
+                mLogger->trace("Mode 2 sector detected. Checking if is just a GAP");
+                if (is_gap(_inputSector.data() + 0x10, 0x920))
+                {
+                    mLogger->trace("Mode 2 GAP detected.");
+                    return ST_MODE2_GAP;
+                }
+                //
+                // Might be Mode 2 XA GAP
+                //
+                mLogger->trace("Checking if is an XA GAP sector type. "
+                               "Wrong, but used in some games and can free some space.");
+                if ((_inputSector[0x10] == _inputSector[0x14] && // First we must check if contains the XA FLAG
+                     _inputSector[0x11] == _inputSector[0x15] &&
+                     _inputSector[0x12] == _inputSector[0x16] &&
+                     _inputSector[0x13] == _inputSector[0x17]) &&
+                    is_gap(_inputSector.data() + 0x18, 0x918)) // Then check if it's a GAP
+                {
+                    mLogger->trace("Mode 2 XA GAP detected.");
+                    return ST_MODE2_XA_GAP;
+                }
                 //
                 // Might be Mode 2, XA 1 or 2
                 //

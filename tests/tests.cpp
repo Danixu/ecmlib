@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
         {"mode1_gap.bin", ecmlib::ST_MODE1_GAP},
         {"mode1_raw.bin", ecmlib::ST_MODE1_RAW},
         {"mode2.bin", ecmlib::ST_MODE2},
+        {"mode2_xa_gap.bin", ecmlib::ST_MODE2_XA_GAP},
+        {"mode2_gap.bin", ecmlib::ST_MODE2_GAP},
         {"mode2_xa1.bin", ecmlib::ST_MODE2_XA1},
         {"mode2_xa1_gap.bin", ecmlib::ST_MODE2_XA1_GAP}};
 

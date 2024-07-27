@@ -107,6 +107,9 @@ namespace ecmlib
     private:
         // ECM variables
         const uint8_t zeroaddress[4] = {0, 0, 0, 0};
+        char *_dataPos = nullptr;
+        uint16_t _dataSize = 0;
+        optimizations _realOptimizations = optimizations::OO_NONE;
         // Methods
         bool inline is_gap(
             char *sector,

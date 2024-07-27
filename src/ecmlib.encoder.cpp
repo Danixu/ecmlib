@@ -88,64 +88,248 @@ namespace ecmlib
             return STATUS_ERROR_NO_ENOUGH_DATA;
         }
 
-        // Copy only the data
-        if (onlyData)
+        uint16_t currentPos = 0;
+        //
+        //
+        // SYNC Data
+        //
+        //
+        if (!(_optimizations & OO_REMOVE_SYNC) &&
+            (_sectorType != ST_CDDA && _sectorType != ST_CDDA_GAP))
         {
-            mLogger->trace("OnlyData mode activated. Only data will be sent to the output.");
-            // Any GAP sector when the optimization OO_REMOVE_GAP is enabled, must be 0
-            if ((_optimizations & OO_REMOVE_GAP) &&
-                (_sectorType == ST_CDDA_GAP ||
-                 _sectorType == ST_MODE1_GAP ||
-                 _sectorType == ST_MODE2_XA_GAP ||
-                 _sectorType == ST_MODE2_XA1_GAP ||
-                 _sectorType == ST_MODE2_XA2_GAP))
+            // All but the RAW CDDA sector will have sync data. If the optimization to remove it is not set, then copy it.
+            std::copy(_inputSector.begin(), _inputSector.begin() + 0xB, _outputSector.begin() + currentPos);
+            currentPos += 0xB;
+        }
+
+        //
+        //
+        // MSF Data
+        //
+        //
+        if (!(_optimizations & OO_REMOVE_MSF) &&
+            (_sectorType != ST_CDDA && _sectorType != ST_CDDA_GAP))
+        {
+            // All but the RAW CDDA sector will have MSF data. If the optimization to remove it is not set, then copy it.
+            std::copy(_inputSector.begin() + 0XC, _inputSector.begin() + 0xE, _outputSector.begin() + currentPos);
+            currentPos += 3;
+        }
+
+        //
+        //
+        // Mode Data
+        //
+        //
+        if (!(_optimizations & OO_REMOVE_MODE) &&
+            (_sectorType != ST_CDDA && _sectorType != ST_CDDA_GAP))
+        {
+            // All but the RAW CDDA sector will have MODE data. If the optimization to remove it is not set, then copy it.
+            std::copy(_inputSector.begin() + 0XF, _inputSector.begin() + 0xF, _outputSector.begin() + currentPos);
+            currentPos += 1;
+        }
+
+        //
+        //
+        // Flags Data.
+        //
+        //
+        if (_sectorType == ST_MODE2_XA_GAP ||
+            _sectorType == ST_MODE2_XA1 ||
+            _sectorType == ST_MODE2_XA1_GAP ||
+            _sectorType == ST_MODE2_XA2 ||
+            _sectorType == ST_MODE2_XA2_GAP)
+        {
+            // Only Mode 2 XA will have FLAGS
+            if (!_optimizations & OO_REMOVE_REDUNDANT_FLAG)
             {
-                mLogger->trace("The sector is a GAP sector with the OO_REMOVE_GAP optimization enabled, so no data will be copied");
-                _outputSectorSize = 0;
-                return STATUS_OK;
+                // If the optimization to remove it is not set, then fully copy both.
+                std::copy(_inputSector.begin() + 0X10, _inputSector.begin() + 0x17, _outputSector.begin() + currentPos);
+                currentPos += 8;
             }
-            // Sector type CDDA
-            if (_sectorType == ST_CDDA || _sectorType == ST_CDDA_GAP)
+            else
             {
-                mLogger->trace("The sector is a CDDA sector, so will be fully copied.");
-                std::copy(_inputSector.begin(), _inputSector.end(), _outputSector.begin());
-                _outputSectorSize = 2352;
+                // If the optimization to remove it is enabled, then copy only one of them.
+                std::copy(_inputSector.begin() + 0X10, _inputSector.begin() + 0x13, _outputSector.begin() + currentPos);
+                currentPos += 4;
             }
-            // Sector type Mode1
-            if (_sectorType == ST_MODE1 || _sectorType == ST_MODE1_GAP || _sectorType == ST_MODE1_RAW)
+        }
+
+        //
+        //
+        // Sector Data. Everybody has data...
+        //
+        //
+        switch (_sectorType)
+        {
+        case ST_CDDA:
+        case ST_CDDA_GAP:
+            // Set the data position
+            _dataPos = _outputSector.data() + currentPos;
+            // CDDA sectors are fully raw, so all will be copied if it's not a GAP with the GAP optimization enabled.
+            if (_sectorType == ST_CDDA || !(_optimizations & OO_REMOVE_GAP))
             {
-                mLogger->trace("The sector is a Mode1 sector. Data between 0x10 and 0x80F will be copied");
-                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x80F, _outputSector.begin());
-                _outputSectorSize = 0x80F - 0x10;
+                std::copy(_inputSector.begin(), _inputSector.begin() + 0x92F, _outputSector.begin() + currentPos);
+                currentPos += 0x92F;
+                _dataSize = 0x930;
             }
-            // Sector type Mode2
-            if (_sectorType == ST_MODE2)
+            else
             {
-                mLogger->trace("The sector is a Mode2 sector. Data between 0x10 and 0x92F will be copied");
-                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x92F, _outputSector.begin());
-                _outputSectorSize = 0x92F - 0x10;
+                _dataSize = 0;
             }
-            // Sector type Mode2 XA Gap
-            if (_sectorType == ST_MODE2_XA_GAP)
+            // Note: currentPos should be 0
+            break;
+
+        case ST_MODE1:
+        case ST_MODE1_RAW:
+        case ST_MODE1_GAP:
+            // Set the data position
+            _dataPos = _outputSector.data() + currentPos;
+            // Mode1 sectors starts at 0x10 and ends at 0x80F
+            if (_sectorType == ST_MODE1 || _sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_GAP))
             {
-                mLogger->trace("The sector is a Mode2 XA GAP sector. Data between 0x19 and 0x92F will be copied");
-                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x92F, _outputSector.begin());
-                _outputSectorSize = 0x92F - 0x18;
+                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x80F, _outputSector.begin() + currentPos);
+                currentPos += 0x7FF;
+                _dataSize = 0x800;
             }
-            // Sector type Mode2 XA1
-            if (_sectorType == ST_MODE2_XA1 || _sectorType == ST_MODE2_XA1_GAP)
+            else
             {
-                mLogger->trace("The sector is a Mode2 XA1 sector. Data between 0x19 and 0x92F will be copied");
-                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x817, _outputSector.begin());
-                _outputSectorSize = 0x817 - 0x18;
+                _dataSize = 0;
             }
-            // Sector type Mode2 XA2
-            if (_sectorType == ST_MODE2_XA2 || _sectorType == ST_MODE2_XA2_GAP)
+            break;
+
+        case ST_MODE2:
+        case ST_MODE2_GAP:
+            // Set the data position
+            _dataPos = _outputSector.data() + currentPos;
+            // Mode1 sectors starts at 0x10 and ends at 0x80F
+            if (_sectorType == ST_MODE2 || !(_optimizations & OO_REMOVE_GAP))
             {
-                mLogger->trace("The sector is a Mode2 XA2 sector. Data between 0x19 and 0x92F will be copied");
-                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x9BB, _outputSector.begin());
-                _outputSectorSize = 0x9BB - 0x18;
+                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x80F, _outputSector.begin() + currentPos);
+                currentPos += 0x7FF;
+                _dataSize = 0x800;
             }
+            else
+            {
+                _dataSize = 0;
+            }
+            break;
+
+        case ST_MODE2_XA1:
+        case ST_MODE2_XA1_GAP:
+        // The unknown XA mode (GAP) will be threated as XA1 because is mainly used in PSX games
+        case ST_MODE2_XA_GAP:
+            // Set the data position
+            _dataPos = _outputSector.data() + currentPos;
+            // Mode1 sectors starts at 0x18 and ends at 0x817
+            if (_sectorType == ST_MODE2_XA1 || !(_optimizations & OO_REMOVE_GAP))
+            {
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x817, _outputSector.begin() + currentPos);
+                currentPos += 0x7FF;
+                _dataSize = 0x800;
+            }
+            else
+            {
+                _dataSize = 0;
+            }
+            break;
+
+        case ST_MODE2_XA2:
+        case ST_MODE2_XA2_GAP:
+            // Set the data position
+            _dataPos = _outputSector.data() + currentPos;
+            // Mode1 sectors starts at 0x18 and ends at 0x80F
+            if (_sectorType == ST_MODE2_XA2 || !(_optimizations & OO_REMOVE_GAP))
+            {
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x92B, _outputSector.begin() + currentPos);
+                currentPos += 0x913;
+                _dataSize = 0x914;
+            }
+            else
+            {
+                _dataSize = 0;
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        //
+        //
+        // EDC data. Mode 1 and Mode 2 XA.
+        //
+        //
+        switch (_sectorType)
+        {
+        case ST_MODE1:
+        case ST_MODE1_RAW:
+        case ST_MODE1_GAP:
+            // Mode1 EDC starts at 0x810 and ends at 0x813
+            if (_sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_EDC))
+            {
+                std::copy(_inputSector.begin() + 0x810, _inputSector.begin() + 0x813, _outputSector.begin() + currentPos);
+                currentPos += 4;
+            }
+
+            break;
+
+        case ST_MODE2_XA1:
+        case ST_MODE2_XA1_GAP:
+        case ST_MODE2_XA_GAP:
+            // Mode2 XA1 EDC starts at 0x818 and ends at 0x81B
+            if (!(_optimizations & OO_REMOVE_EDC))
+            {
+                std::copy(_inputSector.begin() + 0x818, _inputSector.begin() + 0x81B, _outputSector.begin() + currentPos);
+                currentPos += 4;
+            }
+
+            break;
+
+        case ST_MODE2_XA2:
+        case ST_MODE2_XA2_GAP:
+            // Mode2 XA2 EDC starts at 0x92C and ends at 0x92F
+            if (!(_optimizations & OO_REMOVE_EDC))
+            {
+                std::copy(_inputSector.begin() + 0x92C, _inputSector.begin() + 0x92F, _outputSector.begin() + currentPos);
+                currentPos += 4;
+            }
+
+            break;
+
+        default:
+            break;
+        }
+
+        //
+        //
+        // Blank data. Mode 1
+        //
+        //
+        if ((_sectorType == ST_MODE1 ||
+             _sectorType == ST_MODE1_GAP ||
+             _sectorType == ST_MODE1_RAW) &&
+            (_sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_BLANKS)))
+        {
+            // Mode1 Blank data starts at 0x814 and ends at 0x81B
+            std::copy(_inputSector.begin() + 0x814, _inputSector.begin() + 0x81B, _outputSector.begin() + currentPos);
+            currentPos += 8;
+        }
+
+        //
+        //
+        // Mode 1 and Mode 2 XA1 Correction Code
+        //
+        //
+        if ((_sectorType == ST_MODE1 ||
+             _sectorType == ST_MODE1_RAW ||
+             _sectorType == ST_MODE1_GAP ||
+             _sectorType == ST_MODE2_XA1 ||
+             _sectorType == ST_MODE2_XA1_GAP ||
+             _sectorType == ST_MODE2_XA_GAP) &&
+            (_sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_ECC)))
+        {
+            std::copy(_inputSector.begin() + 0x81C, _inputSector.begin() + 0x92F, _outputSector.begin() + currentPos);
+            currentPos += 114;
         }
 
         mLogger->debug("Optimization finished.");

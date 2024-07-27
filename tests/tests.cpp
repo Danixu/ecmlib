@@ -62,6 +62,17 @@ int main(int argc, char *argv[])
             appLogger->error("The detected sector type doesn't matches the expected one ({}).", (uint8_t)filesToCheck[i].type);
             return 1;
         }
+
+        // Optimize the sector
+        ecmEncoder.optimize();
+
+        // Get the output sector
+        ecmlib::encoded_sector optimizedSector = ecmEncoder.get_encoded_sector();
+
+        std::ofstream outFile(filesToCheck[i].file + ".output");
+
+        outFile.write(optimizedSector.optimizedSectorData, optimizedSector.optimizedSectorSize);
+        outFile.close();
     }
 
     return 0;

@@ -71,9 +71,9 @@ namespace ecmlib
      * @param onlyData Remove all except the data from the sector
      * @return status_code Status code
      */
-    status_code encoder::optimize(bool force, bool onlyData)
+    status_code encoder::optimize(bool force)
     {
-        mLogger->debug("Optimizing the sector...\nForce: {}\nOnly Data: {}", force, onlyData);
+        mLogger->debug("Optimizing the sector... Force: {}", force);
         // Check if the sector was loaded
         if (_inputSectorSize == 0)
         {
@@ -98,8 +98,8 @@ namespace ecmlib
             (_sectorType != ST_CDDA && _sectorType != ST_CDDA_GAP))
         {
             // All but the RAW CDDA sector will have sync data. If the optimization to remove it is not set, then copy it.
-            std::copy(_inputSector.begin(), _inputSector.begin() + 0xB, _outputSector.begin() + currentPos);
-            currentPos += 0xB;
+            std::copy(_inputSector.begin(), _inputSector.begin() + 0xC, _outputSector.begin() + currentPos);
+            currentPos += 12;
         }
 
         //
@@ -111,7 +111,7 @@ namespace ecmlib
             (_sectorType != ST_CDDA && _sectorType != ST_CDDA_GAP))
         {
             // All but the RAW CDDA sector will have MSF data. If the optimization to remove it is not set, then copy it.
-            std::copy(_inputSector.begin() + 0XC, _inputSector.begin() + 0xE, _outputSector.begin() + currentPos);
+            std::copy(_inputSector.begin() + 0XC, _inputSector.begin() + 0xF, _outputSector.begin() + currentPos);
             currentPos += 3;
         }
 
@@ -124,7 +124,7 @@ namespace ecmlib
             (_sectorType != ST_CDDA && _sectorType != ST_CDDA_GAP))
         {
             // All but the RAW CDDA sector will have MODE data. If the optimization to remove it is not set, then copy it.
-            std::copy(_inputSector.begin() + 0XF, _inputSector.begin() + 0xF, _outputSector.begin() + currentPos);
+            std::copy(_inputSector.begin() + 0XF, _inputSector.begin() + 0x10, _outputSector.begin() + currentPos);
             currentPos += 1;
         }
 
@@ -140,16 +140,16 @@ namespace ecmlib
             _sectorType == ST_MODE2_XA2_GAP)
         {
             // Only Mode 2 XA will have FLAGS
-            if (!_optimizations & OO_REMOVE_REDUNDANT_FLAG)
+            if (!(_optimizations & OO_REMOVE_REDUNDANT_FLAG))
             {
                 // If the optimization to remove it is not set, then fully copy both.
-                std::copy(_inputSector.begin() + 0X10, _inputSector.begin() + 0x17, _outputSector.begin() + currentPos);
+                std::copy(_inputSector.begin() + 0X10, _inputSector.begin() + 0x18, _outputSector.begin() + currentPos);
                 currentPos += 8;
             }
             else
             {
                 // If the optimization to remove it is enabled, then copy only one of them.
-                std::copy(_inputSector.begin() + 0X10, _inputSector.begin() + 0x13, _outputSector.begin() + currentPos);
+                std::copy(_inputSector.begin() + 0X10, _inputSector.begin() + 0x14, _outputSector.begin() + currentPos);
                 currentPos += 4;
             }
         }
@@ -164,17 +164,17 @@ namespace ecmlib
         case ST_CDDA:
         case ST_CDDA_GAP:
             // Set the data position
-            _dataPos = _outputSector.data() + currentPos;
+            _sector.dataPosition = _outputSector.data() + currentPos;
             // CDDA sectors are fully raw, so all will be copied if it's not a GAP with the GAP optimization enabled.
             if (_sectorType == ST_CDDA || !(_optimizations & OO_REMOVE_GAP))
             {
-                std::copy(_inputSector.begin(), _inputSector.begin() + 0x92F, _outputSector.begin() + currentPos);
-                currentPos += 0x92F;
-                _dataSize = 0x930;
+                std::copy(_inputSector.begin(), _inputSector.begin() + 0x930, _outputSector.begin() + currentPos);
+                currentPos += 0x930;
+                _sector.dataSize = 0x930;
             }
             else
             {
-                _dataSize = 0;
+                _sector.dataSize = 0;
             }
             // Note: currentPos should be 0
             break;
@@ -183,34 +183,34 @@ namespace ecmlib
         case ST_MODE1_RAW:
         case ST_MODE1_GAP:
             // Set the data position
-            _dataPos = _outputSector.data() + currentPos;
+            _sector.dataPosition = _outputSector.data() + currentPos;
             // Mode1 sectors starts at 0x10 and ends at 0x80F
             if (_sectorType == ST_MODE1 || _sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_GAP))
             {
-                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x80F, _outputSector.begin() + currentPos);
-                currentPos += 0x7FF;
-                _dataSize = 0x800;
+                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x810, _outputSector.begin() + currentPos);
+                currentPos += 0x800;
+                _sector.dataSize = 0x800;
             }
             else
             {
-                _dataSize = 0;
+                _sector.dataSize = 0;
             }
             break;
 
         case ST_MODE2:
         case ST_MODE2_GAP:
             // Set the data position
-            _dataPos = _outputSector.data() + currentPos;
-            // Mode1 sectors starts at 0x10 and ends at 0x80F
+            _sector.dataPosition = _outputSector.data() + currentPos;
+            // Mode2 sectors starts at 0x10 and ends at 0x92F
             if (_sectorType == ST_MODE2 || !(_optimizations & OO_REMOVE_GAP))
             {
-                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x80F, _outputSector.begin() + currentPos);
-                currentPos += 0x7FF;
-                _dataSize = 0x800;
+                std::copy(_inputSector.begin() + 0x10, _inputSector.begin() + 0x930, _outputSector.begin() + currentPos);
+                currentPos += 0x920;
+                _sector.dataSize = 0x920;
             }
             else
             {
-                _dataSize = 0;
+                _sector.dataSize = 0;
             }
             break;
 
@@ -219,34 +219,34 @@ namespace ecmlib
         // The unknown XA mode (GAP) will be threated as XA1 because is mainly used in PSX games
         case ST_MODE2_XA_GAP:
             // Set the data position
-            _dataPos = _outputSector.data() + currentPos;
+            _sector.dataPosition = _outputSector.data() + currentPos;
             // Mode1 sectors starts at 0x18 and ends at 0x817
             if (_sectorType == ST_MODE2_XA1 || !(_optimizations & OO_REMOVE_GAP))
             {
-                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x817, _outputSector.begin() + currentPos);
-                currentPos += 0x7FF;
-                _dataSize = 0x800;
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x818, _outputSector.begin() + currentPos);
+                currentPos += 0x800;
+                _sector.dataSize = 0x800;
             }
             else
             {
-                _dataSize = 0;
+                _sector.dataSize = 0;
             }
             break;
 
         case ST_MODE2_XA2:
         case ST_MODE2_XA2_GAP:
             // Set the data position
-            _dataPos = _outputSector.data() + currentPos;
-            // Mode1 sectors starts at 0x18 and ends at 0x80F
+            _sector.dataPosition = _outputSector.data() + currentPos;
+            // Mode2 XA2 sectors starts at 0x18 and ends at 0x92B
             if (_sectorType == ST_MODE2_XA2 || !(_optimizations & OO_REMOVE_GAP))
             {
-                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x92B, _outputSector.begin() + currentPos);
-                currentPos += 0x913;
-                _dataSize = 0x914;
+                std::copy(_inputSector.begin() + 0x18, _inputSector.begin() + 0x92C, _outputSector.begin() + currentPos);
+                currentPos += 0x914;
+                _sector.dataSize = 0x914;
             }
             else
             {
-                _dataSize = 0;
+                _sector.dataSize = 0;
             }
             break;
 
@@ -267,7 +267,7 @@ namespace ecmlib
             // Mode1 EDC starts at 0x810 and ends at 0x813
             if (_sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_EDC))
             {
-                std::copy(_inputSector.begin() + 0x810, _inputSector.begin() + 0x813, _outputSector.begin() + currentPos);
+                std::copy(_inputSector.begin() + 0x810, _inputSector.begin() + 0x814, _outputSector.begin() + currentPos);
                 currentPos += 4;
             }
 
@@ -279,7 +279,7 @@ namespace ecmlib
             // Mode2 XA1 EDC starts at 0x818 and ends at 0x81B
             if (!(_optimizations & OO_REMOVE_EDC))
             {
-                std::copy(_inputSector.begin() + 0x818, _inputSector.begin() + 0x81B, _outputSector.begin() + currentPos);
+                std::copy(_inputSector.begin() + 0x818, _inputSector.begin() + 0x81C, _outputSector.begin() + currentPos);
                 currentPos += 4;
             }
 
@@ -290,7 +290,7 @@ namespace ecmlib
             // Mode2 XA2 EDC starts at 0x92C and ends at 0x92F
             if (!(_optimizations & OO_REMOVE_EDC))
             {
-                std::copy(_inputSector.begin() + 0x92C, _inputSector.begin() + 0x92F, _outputSector.begin() + currentPos);
+                std::copy(_inputSector.begin() + 0x92C, _inputSector.begin() + 0x930, _outputSector.begin() + currentPos);
                 currentPos += 4;
             }
 
@@ -311,7 +311,7 @@ namespace ecmlib
             (_sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_BLANKS)))
         {
             // Mode1 Blank data starts at 0x814 and ends at 0x81B
-            std::copy(_inputSector.begin() + 0x814, _inputSector.begin() + 0x81B, _outputSector.begin() + currentPos);
+            std::copy(_inputSector.begin() + 0x814, _inputSector.begin() + 0x81C, _outputSector.begin() + currentPos);
             currentPos += 8;
         }
 
@@ -328,9 +328,12 @@ namespace ecmlib
              _sectorType == ST_MODE2_XA_GAP) &&
             (_sectorType == ST_MODE1_RAW || !(_optimizations & OO_REMOVE_ECC)))
         {
-            std::copy(_inputSector.begin() + 0x81C, _inputSector.begin() + 0x92F, _outputSector.begin() + currentPos);
-            currentPos += 114;
+            std::copy(_inputSector.begin() + 0x81C, _inputSector.begin() + 0x930, _outputSector.begin() + currentPos);
+            currentPos += 276;
         }
+
+        _sector.optimizedSectorData = _outputSector.data();
+        _sector.optimizedSectorSize = currentPos;
 
         mLogger->debug("Optimization finished.");
         return STATUS_OK;

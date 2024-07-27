@@ -24,68 +24,6 @@
 //   * CDDA: If the sector type is unrecognized, will be threated as raw (like CDDA)
 //   * CDDA_GAP: As above sector type, unrecognized type. The difference is that GAP is zeroed
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// Sector types
-//
-// CDDA
-// -----------------------------------------------------
-//        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-// 0000h [---DATA...
-// ...
-// 0920h                                     ...DATA---]
-// -----------------------------------------------------
-//
-// Mode 1
-// -----------------------------------------------------
-//        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-// 0000h 00 FF FF FF FF FF FF FF FF FF FF 00 [-MSF -] 01
-// 0010h [---DATA...
-// ...
-// 0800h                                     ...DATA---]
-// 0810h [---EDC---] 00 00 00 00 00 00 00 00 [---ECC...
-// ...
-// 0920h                                      ...ECC---]
-// -----------------------------------------------------
-//
-// Mode 2: This mode is not widely used
-// -----------------------------------------------------
-//        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-// 0000h 00 FF FF FF FF FF FF FF FF FF FF 00 [-MSF -] 02
-// 0010h [---DATA...
-// ...
-// 0920h                                     ...DATA---]
-// -----------------------------------------------------
-//
-// Mode 2 (XA), form 1
-// -----------------------------------------------------
-//        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-// 0000h 00 FF FF FF FF FF FF FF FF FF FF 00 [-MSF -] 02
-// 0010h [--FLAGS--] [--FLAGS--] [---DATA...
-// ...
-// 0810h             ...DATA---] [---EDC---] [---ECC...
-// ...
-// 0920h                                      ...ECC---]
-// -----------------------------------------------------
-//
-// Mode 2 (XA), form 2
-// -----------------------------------------------------
-//        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-// 0000h 00 FF FF FF FF FF FF FF FF FF FF 00 [-MSF -] 02
-// 0010h [--FLAGS--] [--FLAGS--] [---DATA...
-// ...
-// 0920h                         ...DATA---] [---EDC---]
-// -----------------------------------------------------
-//
-// MSF:  Sector address, encoded as minutes:seconds:frames in BCD
-// FLAGS: Used in Mode 2 (XA) sectors describing the type of sector; repeated
-//        twice for redundancy
-// DATA:  Area of the sector which contains the actual data itself
-// EDC:   Error Detection Code
-// ECC:   Error Correction Code
-//
-// First sector address looks like is always 00:02:00, so we will use this number on it
-
 #include "ecmlib.base.hpp"
 #include <cstring>
 
@@ -94,6 +32,15 @@
 
 namespace ecmlib
 {
+    struct encoded_sector
+    {
+        char *dataPosition = nullptr;
+        uint16_t dataSize = 0;
+        char *optimizedSectorData = nullptr;
+        uint16_t optimizedSectorSize = 0;
+        optimizations realOptimizations = optimizations::OO_NONE;
+    };
+
     class encoder : public base
     {
     public:
@@ -101,15 +48,14 @@ namespace ecmlib
         encoder(optimizations opt);
         ~encoder();
         status_code load(char *buffer, uint16_t toRead);
-        status_code optimize(bool force = false, bool onlyData = false);
+        status_code optimize(bool force = false);
         sector_type inline get_sector_type() { return _sectorType; };
+        encoded_sector inline get_encoded_sector() { return _sector; };
 
     private:
         // ECM variables
         const uint8_t zeroaddress[4] = {0, 0, 0, 0};
-        char *_dataPos = nullptr;
-        uint16_t _dataSize = 0;
-        optimizations _realOptimizations = optimizations::OO_NONE;
+        encoded_sector _sector;
         // Methods
         bool inline is_gap(
             char *sector,

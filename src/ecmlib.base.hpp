@@ -152,6 +152,11 @@ namespace ecmlib
 
         // Methods
         static std::string logger_name();
+        inline status_code set_optimizations(optimizations opts)
+        {
+            _optimizations = opts;
+            return STATUS_OK;
+        };
 
     protected:
         // Variables

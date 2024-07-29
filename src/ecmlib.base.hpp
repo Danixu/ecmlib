@@ -84,7 +84,10 @@
 // EDC:   Error Detection Code
 // ECC:   Error Correction Code
 //
-// First sector address looks like is always 00:02:00, so we will use this number on it
+// MSF Notes:
+// First sector address offset is 00:02:00 (150 frames).
+// Minute: 60 seconds
+// Second: 75 Frames
 
 #include <stdint.h>
 #include <vector>
@@ -146,26 +149,14 @@ namespace ecmlib
     class base
     {
     public:
-        base(optimizations opt);
+        base();
         ~base();
         virtual status_code load(char *buffer, uint16_t toRead) { return STATUS_ERROR_UNKNOWN_ERROR; };
 
         // Methods
         static std::string logger_name();
-        inline status_code set_optimizations(optimizations opts)
-        {
-            _optimizations = opts;
-            return STATUS_OK;
-        };
 
     protected:
-        // Variables
-        std::vector<char> _inputSector;
-        uint16_t _inputSectorSize = 0;
-        std::vector<char> _outputSector;
-        uint16_t _outputSectorSize = 0;
-        sector_type _sectorType = sector_type::ST_UNKNOWN;
-        optimizations _optimizations = optimizations::OO_NONE;
         // Logging
         std::shared_ptr<spdlog::logger> mLogger;
 

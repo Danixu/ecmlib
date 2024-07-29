@@ -30,32 +30,28 @@
 #ifndef __ECMLIB_ENCODER_H__
 #define __ECMLIB_ENCODER_H__
 
+struct sector_data_link
+{
+    char *dataPosition = nullptr;
+    uint16_t dataSize = 0;
+};
+
 namespace ecmlib
 {
-    struct encoded_sector
-    {
-        char *dataPosition = nullptr;
-        uint16_t dataSize = 0;
-        char *optimizedSectorData = nullptr;
-        uint16_t optimizedSectorSize = 0;
-        optimizations realOptimizations = optimizations::OO_NONE;
-    };
-
     class encoder : public base
     {
     public:
         // Public Methods
-        encoder(optimizations opt);
+        encoder();
         ~encoder();
-        status_code load(char *buffer, uint16_t toRead);
-        status_code optimize(bool force = false);
-        sector_type inline get_sector_type() { return _sectorType; };
-        encoded_sector inline get_encoded_sector() { return _sector; };
+        sector_type get_sector_type(char *buffer);
+        status_code get_encoded_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts);
 
     private:
         // ECM variables
         const uint8_t zeroaddress[4] = {0, 0, 0, 0};
-        encoded_sector _sector;
+        sector_data_link _sectorDataLink;
+
         // Methods
         bool inline is_gap(
             char *sector,

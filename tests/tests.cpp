@@ -23,10 +23,11 @@ int main(int argc, char *argv[])
     libLogger->set_level(spdlog::level::trace);
 
     // Input buffer
-    std::vector<char> buffer(2352);
+    std::vector<char> inBuffer(2352);
+    std::vector<char> outBuffer(2352);
 
     // Initialize the ecmlib class
-    ecmlib::encoder ecmEncoder = ecmlib::encoder((ecmlib::optimizations)0);
+    ecmlib::encoder ecmEncoder = ecmlib::encoder();
 
     MD5 md5;
 
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
         if (inFile.is_open())
         {
             appLogger->info("Reading the file \"{}\".", filesToCheck[i].file);
-            inFile.read(buffer.data(), buffer.size());
+            inFile.read(inBuffer.data(), inBuffer.size());
             inFile.close();
         }
         else
@@ -121,7 +122,7 @@ int main(int argc, char *argv[])
         }
 
         appLogger->debug("Checking the md5sum of the file.");
-        std::string inFileMD5 = md5(buffer.data(), buffer.size());
+        std::string inFileMD5 = md5(inBuffer.data(), inBuffer.size());
         appLogger->trace("Detected MD5: {} - Original MD5: {}", inFileMD5, filesToCheck[i].md5);
         if (inFileMD5 != filesToCheck[i].md5)
         {
@@ -133,9 +134,10 @@ int main(int argc, char *argv[])
             appLogger->debug("The input file CRC is correct.");
         }
 
-        ecmEncoder.load(buffer.data(), buffer.size());
-        appLogger->info("The expected type is {} and the detected type is {}.", (uint8_t)filesToCheck[i].type, (uint8_t)ecmEncoder.get_sector_type());
-        if (ecmEncoder.get_sector_type() == filesToCheck[i].type)
+        ecmEncoder.load(inBuffer.data(), inBuffer.size());
+        ecmlib::sector_type sectorType = ecmEncoder.get_sector_type(inBuffer.data());
+        appLogger->info("The expected type is {} and the detected type is {}.", (uint8_t)filesToCheck[i].type, (uint8_t)sectorType);
+        if (sectorType == filesToCheck[i].type)
         {
             appLogger->info("The detected sector type matches.");
         }
@@ -147,21 +149,18 @@ int main(int argc, char *argv[])
 
         for (uint8_t j = 0; j < filesToCheck[i].opts.size(); j++)
         {
-            ecmEncoder.set_optimizations(filesToCheck[i].opts[j]);
-            // Optimize the sector
-            ecmEncoder.optimize();
-
-            // Get the output sector
-            ecmlib::encoded_sector optimizedSector = ecmEncoder.get_encoded_sector();
+            uint16_t encodedSize = 0;
+            //  Optimize the sector
+            ecmEncoder.get_encoded_sector(inBuffer.data(), inBuffer.size(), outBuffer.data(), outBuffer.size(), encodedSize, filesToCheck[i].opts[j]);
 
             // Write the output file for debugging
             std::ofstream outFile(filesToCheck[i].file + ".output." + std::to_string(j));
-            outFile.write(optimizedSector.optimizedSectorData, optimizedSector.optimizedSectorSize);
+            outFile.write(outBuffer.data(), encodedSize);
             outFile.close();
 
             // Check the CRC
             appLogger->debug("Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
-            std::string inFileMD5 = md5(optimizedSector.optimizedSectorData, optimizedSector.optimizedSectorSize);
+            std::string inFileMD5 = md5(outBuffer.data(), encodedSize);
             appLogger->trace("Detected MD5: {} - Original MD5: {}", inFileMD5, filesToCheck[i].opts_md5[j]);
             if (inFileMD5 != filesToCheck[i].opts_md5[j])
             {

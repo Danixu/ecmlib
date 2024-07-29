@@ -7,7 +7,7 @@ namespace ecmlib
      * @brief Construct a new processor::processor object to process the CD-ROM sectors
      *
      */
-    base::base(optimizations opt)
+    base::base()
     {
         // Initialize the logger
         mLogger = spdlog::get(ecmLoggerName);
@@ -21,13 +21,6 @@ namespace ecmlib
             mLogger = spdlog::get(ecmLoggerName);
         }
         mLogger->debug("Initializing base class.");
-
-        // Initialize the buffers
-        mLogger->trace("Creating the read/write buffers.");
-        _inputSector.resize(2352, 0);
-        _outputSector.resize(2352, 0);
-        // Set the optimizations
-        _optimizations = opt;
 
         // Generate the ECM edc and ecc data
         mLogger->trace("Generating required ecc and edc data.");

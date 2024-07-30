@@ -27,36 +27,26 @@
 #include "ecmlib.base.hpp"
 #include <cstring>
 
-#ifndef __ECMLIB_ENCODER_H__
-#define __ECMLIB_ENCODER_H__
-
-struct sector_data_link
-{
-    char *dataPosition = nullptr;
-    uint16_t dataSize = 0;
-};
+#ifndef __ECMLIB_DECODER_H__
+#define __ECMLIB_DECODER_H__
 
 namespace ecmlib
 {
-    class encoder : public base
+    class decoder : public base
     {
     public:
         // Public Methods
-        encoder();
-        ~encoder();
-        sector_type get_sector_type(char *buffer);
-        status_code encode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts);
+        decoder();
+        ~decoder();
+        status_code decode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer,
+                                  uint16_t outBufferSize, sector_type sectorType, uint16_t sectorNumber, optimizations opts);
 
     private:
         // ECM variables
         const uint8_t zeroaddress[4] = {0, 0, 0, 0};
-        sector_data_link _sectorDataLink;
 
         // Methods
-        bool inline is_gap(
-            char *sector,
-            size_t length);
-        sector_type detect();
+        std::vector<char> inline sector_to_time(uint32_t sectorNumber);
     };
 }
 

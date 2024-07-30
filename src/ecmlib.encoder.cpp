@@ -28,7 +28,7 @@ namespace ecmlib
      * @param onlyData Remove all except the data from the sector
      * @return status_code Status code
      */
-    status_code encoder::get_encoded_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts)
+    status_code encoder::encode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts)
     {
         mLogger->debug("Encoding the sector...");
         // Check if the sector was loaded
@@ -289,7 +289,7 @@ namespace ecmlib
             (sectorType == ST_MODE1_RAW || !(opts & OO_REMOVE_ECC)))
         {
             std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x81C, 0x114);
-            encodedDataSize += 276;
+            encodedDataSize += 0x114;
         }
 
         mLogger->debug("Optimization finished.");

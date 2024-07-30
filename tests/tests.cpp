@@ -1,4 +1,5 @@
 #include "ecmlib.encoder.hpp"
+#include "ecmlib.decoder.hpp"
 #include "md5.h"
 #include <spdlog/sinks/stdout_sinks.h>
 #include <fstream>
@@ -24,10 +25,12 @@ int main(int argc, char *argv[])
 
     // Input buffer
     std::vector<char> inBuffer(2352);
-    std::vector<char> outBuffer(2352);
+    std::vector<char> encodedBuffer(2352);
+    std::vector<char> decodedBuffer(2352);
 
-    // Initialize the ecmlib class
+    // Initialize the ecmlib classes
     ecmlib::encoder ecmEncoder = ecmlib::encoder();
+    ecmlib::decoder ecmDecoder = ecmlib::decoder();
 
     MD5 md5;
 
@@ -151,25 +154,47 @@ int main(int argc, char *argv[])
         {
             uint16_t encodedSize = 0;
             //  Optimize the sector
-            ecmEncoder.get_encoded_sector(inBuffer.data(), inBuffer.size(), outBuffer.data(), outBuffer.size(), encodedSize, filesToCheck[i].opts[j]);
+            ecmEncoder.encode_sector(inBuffer.data(), inBuffer.size(), encodedBuffer.data(), encodedBuffer.size(), encodedSize, filesToCheck[i].opts[j]);
 
             // Write the output file for debugging
-            std::ofstream outFile(filesToCheck[i].file + ".output." + std::to_string(j));
-            outFile.write(outBuffer.data(), encodedSize);
-            outFile.close();
+            // std::ofstream encFile(filesToCheck[i].file + ".outenc." + std::to_string(j));
+            // encFile.write(encodedBuffer.data(), encodedSize);
+            // encFile.close();
 
             // Check the CRC
-            appLogger->debug("Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
-            std::string inFileMD5 = md5(outBuffer.data(), encodedSize);
-            appLogger->trace("Detected MD5: {} - Original MD5: {}", inFileMD5, filesToCheck[i].opts_md5[j]);
-            if (inFileMD5 != filesToCheck[i].opts_md5[j])
+            appLogger->debug("Encoder: Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
+            std::string encodedMD5 = md5(encodedBuffer.data(), encodedSize);
+            appLogger->trace("Encoder: Detected MD5: {} - Original MD5: {}", encodedMD5, filesToCheck[i].opts_md5[j]);
+            if (encodedMD5 != filesToCheck[i].opts_md5[j])
             {
-                appLogger->error("The input file CRC with the optimizations {} doesn't matches.", (uint8_t)filesToCheck[i].opts[j]);
+                appLogger->error("The encoded file CRC with the optimizations {} doesn't matches.", (uint8_t)filesToCheck[i].opts[j]);
                 return 1;
             }
             else
             {
-                appLogger->debug("The input file CRC with the optimizations {} is correct.", (uint8_t)filesToCheck[i].opts[j]);
+                appLogger->debug("The encoded file CRC with the optimizations {} is correct.", (uint8_t)filesToCheck[i].opts[j]);
+            }
+
+            // Decode the data and check if original file can be recovered
+
+            ecmDecoder.decode_sector(encodedBuffer.data(), encodedSize, decodedBuffer.data(), decodedBuffer.size(), filesToCheck[i].type, 178, filesToCheck[i].opts[j]);
+
+            // Write the output file for debugging
+            std::ofstream decFile(filesToCheck[i].file + ".outdec." + std::to_string(j));
+            decFile.write(decodedBuffer.data(), decodedBuffer.size());
+            decFile.close();
+
+            appLogger->debug("Decoder: Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
+            std::string decodedMD5 = md5(decodedBuffer.data(), decodedBuffer.size());
+            appLogger->trace("Decoder: Detected MD5: {} - Original MD5: {}", decodedMD5, filesToCheck[i].md5);
+            if (decodedMD5 != filesToCheck[i].md5)
+            {
+                appLogger->error("The decoded file CRC with the optimizations {} doesn't matches.", (uint8_t)filesToCheck[i].opts[j]);
+                return 1;
+            }
+            else
+            {
+                appLogger->debug("The decoded file CRC with the optimizations {} is correct.", (uint8_t)filesToCheck[i].opts[j]);
             }
         }
     }

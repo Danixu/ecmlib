@@ -10,7 +10,7 @@ project(
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output)
 
-set(libsrc ecmlib.base.cpp ecmlib.encoder.cpp)
+set(libsrc ecmlib.base.cpp ecmlib.encoder.cpp ecmlib.decoder.cpp)
 
 # this is the "object library" target: compiles the sources only once
 add_library(objlib OBJECT ${libsrc})

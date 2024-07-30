@@ -13,6 +13,7 @@ struct testData
     std::string md5 = "";
     std::vector<ecmlib::optimizations> opts;
     std::vector<std::string> opts_md5;
+    uint16_t sector_number = 0;
 };
 
 int main(int argc, char *argv[])
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
     std::vector<testData> filesToCheck = {
         {"cdda.bin", ecmlib::ST_CDDA, "93539bdd8c257a5db92d42ad0e78da80", {ecmlib::optimizations::OO_NONE}, {"93539bdd8c257a5db92d42ad0e78da80"}},
         {"cdda_gap.bin", ecmlib::ST_CDDA_GAP, "9e297efc7a522480ef89a4a7f39ce560", {ecmlib::optimizations::OO_NONE, ecmlib::optimizations::OO_REMOVE_GAP}, {"9e297efc7a522480ef89a4a7f39ce560", "d41d8cd98f00b204e9800998ecf8427e"}},
+        // Mode 1
         {"mode1.bin",
          ecmlib::ST_MODE1,
          "15da44e7f3478dcc5fbd057d764fc952",
@@ -56,7 +58,10 @@ int main(int argc, char *argv[])
           "d318ea988a8d324d7ec9e129fa63048d",
           "9343e107d47aa51e7f5cf7d938a36f18",
           "ce00edcf27d5794500b70019b97a903a",
-          "d72c2cc2a244aa0504db9a45ae459b03"}},
+          "d72c2cc2a244aa0504db9a45ae459b03"},
+         178},
+
+        // Mode 1 GAP
         {"mode1_gap.bin",
          ecmlib::ST_MODE1_GAP,
          "f1763c7f872304e73caf73a881c34988",
@@ -75,39 +80,56 @@ int main(int argc, char *argv[])
           "a65f4a9043fb7094ea3750fb96b8db80",
           "c59a8765d6d223f4cf864ff658acfa02",
           "509bdb286ce0e2ce9f8daf7308375970",
+
           "a1a39027338ba0abddd08ef81779e888",
           "7caad74b7cf9e03c5ea5de3309f3060d",
-          "d41d8cd98f00b204e9800998ecf8427e"}},
+          "d41d8cd98f00b204e9800998ecf8427e"},
+         150},
+        // Mode 1 RAW
         {"mode1_raw.bin",
          ecmlib::ST_MODE1_RAW,
          "e5001282027e56a8feb30c9b2c5bf3ee",
          {ecmlib::optimizations::OO_NONE},
-         {"e5001282027e56a8feb30c9b2c5bf3ee"}},
+         {"e5001282027e56a8feb30c9b2c5bf3ee"},
+         178},
+        // Mode 2
         {"mode2.bin",
          ecmlib::ST_MODE2,
          "76457f1d3c5d3b76fbe16d5ea48d5ca7",
          {ecmlib::optimizations::OO_NONE},
-         {"76457f1d3c5d3b76fbe16d5ea48d5ca7"}},
-        {"mode2_xa_gap.bin",
-         ecmlib::ST_MODE2_XA_GAP,
-         "c5fb890a8853a1027b7741bf2d6a6461",
-         {ecmlib::optimizations::OO_NONE},
-         {"c5fb890a8853a1027b7741bf2d6a6461"}},
+         {"76457f1d3c5d3b76fbe16d5ea48d5ca7"},
+         182},
+        // Mode 2 GAP
         {"mode2_gap.bin",
          ecmlib::ST_MODE2_GAP,
          "4fcd456942777be925675cdee81c7cda",
          {ecmlib::optimizations::OO_NONE},
-         {"4fcd456942777be925675cdee81c7cda"}},
+         {"4fcd456942777be925675cdee81c7cda"},
+         759},
+        // Mode 2 XA GAP
+        {"mode2_xa_gap.bin",
+         ecmlib::ST_MODE2_XA_GAP,
+         "c5fb890a8853a1027b7741bf2d6a6461",
+         {ecmlib::optimizations::OO_NONE},
+         {"c5fb890a8853a1027b7741bf2d6a6461"},
+
+         759},
+
+        // Mode 2 XA1
         {"mode2_xa1.bin",
          ecmlib::ST_MODE2_XA1,
          "6d1b2ccde687e2c19fd77bef1a70a7f2",
          {ecmlib::optimizations::OO_NONE},
-         {"6d1b2ccde687e2c19fd77bef1a70a7f2"}},
+         {"6d1b2ccde687e2c19fd77bef1a70a7f2"},
+         759},
+
+        // Mode 2 XA1 GAP
         {"mode2_xa1_gap.bin",
          ecmlib::ST_MODE2_XA1_GAP,
          "d3519e4abafbf30384ecc0a1be63310d",
          {ecmlib::optimizations::OO_NONE},
-         {"d3519e4abafbf30384ecc0a1be63310d"}}};
+         {"d3519e4abafbf30384ecc0a1be63310d"},
+         150}};
 
     for (uint8_t i = 0; i < filesToCheck.size(); i++)
     {
@@ -157,9 +179,9 @@ int main(int argc, char *argv[])
             ecmEncoder.encode_sector(inBuffer.data(), inBuffer.size(), encodedBuffer.data(), encodedBuffer.size(), encodedSize, filesToCheck[i].opts[j]);
 
             // Write the output file for debugging
-            // std::ofstream encFile(filesToCheck[i].file + ".outenc." + std::to_string(j));
-            // encFile.write(encodedBuffer.data(), encodedSize);
-            // encFile.close();
+            std::ofstream encFile(filesToCheck[i].file + ".outenc." + std::to_string(j));
+            encFile.write(encodedBuffer.data(), encodedSize);
+            encFile.close();
 
             // Check the CRC
             appLogger->debug("Encoder: Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
@@ -177,7 +199,7 @@ int main(int argc, char *argv[])
 
             // Decode the data and check if original file can be recovered
 
-            ecmDecoder.decode_sector(encodedBuffer.data(), encodedSize, decodedBuffer.data(), decodedBuffer.size(), filesToCheck[i].type, 178, filesToCheck[i].opts[j]);
+            ecmDecoder.decode_sector(encodedBuffer.data(), encodedSize, decodedBuffer.data(), decodedBuffer.size(), filesToCheck[i].type, filesToCheck[i].sector_number, filesToCheck[i].opts[j]);
 
             // Write the output file for debugging
             std::ofstream decFile(filesToCheck[i].file + ".outdec." + std::to_string(j));

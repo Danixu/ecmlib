@@ -106,6 +106,7 @@ namespace ecmlib
         STATUS_ERROR_NO_DATA,        // The sector was not loaded in the library
         STATUS_ERROR_NO_ENOUGH_DATA, // The provided data is incomplete
         STATUS_ERROR_TOO_MUCH_DATA,  // Too much data provided to the lib
+        STATUS_ERROR_NO_ENOUGH_BUFFER_SPACE,
 
         STATUS_OK = 0
     };

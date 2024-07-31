@@ -666,12 +666,15 @@ namespace ecmlib
             mLogger->trace("Checking the EDC optimization.");
             bool canBeDone = true;
 
+            uint32_t calculatedEDC = 0;
+            uint32_t recoveredEDC = 1;
+
             switch (_lastEncodedType)
             {
             case ST_MODE1:
             case ST_MODE1_GAP:
-                uint32_t calculatedEDC = edc_compute(buffer, 0x810);
-                uint32_t recoveredEDC = get32lsb(buffer + 0x810);
+                calculatedEDC = edc_compute(buffer, 0x810);
+                recoveredEDC = get32lsb(buffer + 0x810);
                 if (calculatedEDC != recoveredEDC)
                 {
                     canBeDone = false;
@@ -681,8 +684,8 @@ namespace ecmlib
             case ST_MODE2_XA1:
             case ST_MODE2_XA1_GAP:
             case ST_MODE2_XA_GAP:
-                uint32_t calculatedEDC = edc_compute(buffer + 0x10, 0x808);
-                uint32_t recoveredEDC = get32lsb(buffer + 0x818);
+                calculatedEDC = edc_compute(buffer + 0x10, 0x808);
+                recoveredEDC = get32lsb(buffer + 0x818);
                 if (calculatedEDC != recoveredEDC)
                 {
                     canBeDone = false;
@@ -691,8 +694,8 @@ namespace ecmlib
 
             case ST_MODE2_XA2:
             case ST_MODE2_XA2_GAP:
-                uint32_t calculatedEDC = edc_compute(buffer + 0x10, 0x91C);
-                uint32_t recoveredEDC = get32lsb(buffer + 0x92C);
+                calculatedEDC = edc_compute(buffer + 0x10, 0x91C);
+                recoveredEDC = get32lsb(buffer + 0x92C);
                 if (calculatedEDC != recoveredEDC)
                 {
                     canBeDone = false;

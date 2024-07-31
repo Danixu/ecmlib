@@ -146,6 +146,10 @@ namespace ecmlib
     {
         return static_cast<optimizations>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
     }
+    optimizations inline operator^=(optimizations a, optimizations b)
+    {
+        return static_cast<optimizations>(static_cast<uint8_t>(a) ^ static_cast<uint8_t>(b));
+    }
 
     class base
     {

@@ -45,18 +45,23 @@ namespace ecmlib
         encoder();
         ~encoder();
         sector_type get_sector_type(char *buffer);
-        status_code encode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts);
+        status_code encode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts, bool force = false);
+        sector_type get_encoded_sector_type();
+        optimizations get_encoded_optimizations();
 
     private:
         // ECM variables
         const uint8_t zeroaddress[4] = {0, 0, 0, 0};
         sector_data_link _sectorDataLink;
+        sector_type _lastEncodedType = ST_UNKNOWN;
+        optimizations _lastOptimizations = OO_NONE;
 
         // Methods
         bool inline is_gap(
             char *sector,
             size_t length);
-        sector_type detect();
+        uint16_t get_encoded_size(sector_type sectorType, optimizations opts);
+        status_code check_optimizations(char *buffer, optimizations opts);
     };
 }
 

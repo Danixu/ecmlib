@@ -406,12 +406,6 @@ namespace ecmlib
 
                 case ST_MODE2_XA1:
                 case ST_MODE2_XA1_GAP:
-                    ecc_write_sector(
-                        zeroaddress,
-                        reinterpret_cast<uint8_t *>(outBuffer + 0x10),
-                        reinterpret_cast<uint8_t *>(outBuffer + 0x81C));
-                    break;
-
                 case ST_MODE2_XA_GAP:
                     ecc_write_sector(
                         zeroaddress,

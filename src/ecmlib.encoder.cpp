@@ -616,7 +616,7 @@ namespace ecmlib
 
     status_code encoder::check_optimizations(char *buffer, optimizations opts)
     {
-        mLogger->trace("Checking the applicable optimizations.");
+        mLogger->trace("Starting the optimizations check.");
         // Set the optimizations to the received ones
         _lastOptimizations = opts;
         // SYNC, MSF and MODE optimizations can be always done. The decoder will receive that data.
@@ -655,12 +655,12 @@ namespace ecmlib
         //
         //
         if ((_lastOptimizations & OO_REMOVE_EDC) &&
-            (_lastEncodedType == ST_MODE1 &&
-             _lastEncodedType == ST_MODE1_GAP &&
-             _lastEncodedType == ST_MODE2_XA_GAP &&
-             _lastEncodedType == ST_MODE2_XA1 &&
-             _lastEncodedType == ST_MODE2_XA1_GAP &&
-             _lastEncodedType == ST_MODE2_XA2 &&
+            (_lastEncodedType == ST_MODE1 ||
+             _lastEncodedType == ST_MODE1_GAP ||
+             _lastEncodedType == ST_MODE2_XA_GAP ||
+             _lastEncodedType == ST_MODE2_XA1 ||
+             _lastEncodedType == ST_MODE2_XA1_GAP ||
+             _lastEncodedType == ST_MODE2_XA2 ||
              _lastEncodedType == ST_MODE2_XA2_GAP))
         {
             mLogger->trace("Checking the EDC optimization.");
@@ -727,7 +727,7 @@ namespace ecmlib
              _lastEncodedType == ST_MODE1_GAP))
         {
             mLogger->trace("Checking the BLANKS optimization.");
-            if (!is_gap(buffer + 814, 8))
+            if (!is_gap(buffer + 815, 8))
             {
                 mLogger->trace("The optimization BLANKS is not applicable in this sector.");
                 _lastOptimizations ^= OO_REMOVE_BLANKS;

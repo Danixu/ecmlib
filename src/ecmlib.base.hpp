@@ -91,6 +91,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <utility>
 #include "spdlog/spdlog.h"
 
 #ifndef __ECMLIB_BASE_H__
@@ -100,7 +101,7 @@ namespace ecmlib
 {
     const std::string ecmLoggerName = "ecmlib";
 
-    enum class status_code : int8_t
+    enum class status_code
     {
         STATUS_ERROR_UNKNOWN_ERROR = -127,
         STATUS_ERROR_NO_DATA,        // The sector was not loaded in the library
@@ -111,7 +112,7 @@ namespace ecmlib
         STATUS_OK = 0
     };
 
-    enum class sector_type : uint8_t
+    enum class sector_type
     {
         ST_UNKNOWN = 0,
         ST_CDDA,
@@ -129,7 +130,7 @@ namespace ecmlib
         ST_MODEX
     };
 
-    enum class optimizations : uint8_t
+    enum class optimizations
     {
         OO_NONE = 0,                       // Just copy the input. Surelly will not be used
         OO_REMOVE_SYNC = 1,                // Remove sync bytes (a.k.a first 12 bytes)
@@ -169,8 +170,7 @@ namespace ecmlib
         std::shared_ptr<spdlog::logger> mLogger;
 
         // ecm tools inline functions
-        static inline uint32_t get32lsb(
-            const char *src)
+        static inline uint32_t get32lsb(const char *src)
         {
             return (uint32_t)(static_cast<uint8_t>(src[0]) << 0 |
                               static_cast<uint8_t>(src[1]) << 8 |
@@ -201,26 +201,26 @@ namespace ecmlib
         }
 
         // ecm tools
-        const int8_t ecc_checkpq(
+        int8_t ecc_checkpq(
             const uint8_t *address,
             const uint8_t *data,
             size_t major_count,
             size_t minor_count,
             size_t major_mult,
             size_t minor_inc,
-            const uint8_t *ecc);
+            const uint8_t *ecc) const;
         int8_t ecc_check_sector(
             const uint8_t *address,
             const uint8_t *data,
             const uint8_t *ecc);
-        const void ecc_write_pq(
+        void ecc_write_pq(
             const uint8_t *address,
             const uint8_t *data,
             size_t major_count,
             size_t minor_count,
             size_t major_mult,
             size_t minor_inc,
-            uint8_t *ecc);
+            uint8_t *ecc) const;
         void ecc_write_sector(
             const uint8_t *address,
             const uint8_t *data,

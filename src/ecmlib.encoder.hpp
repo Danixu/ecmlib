@@ -26,6 +26,7 @@
 
 #include "ecmlib.base.hpp"
 #include <cstring>
+#include <utility>
 
 #ifndef __ECMLIB_ENCODER_H__
 #define __ECMLIB_ENCODER_H__

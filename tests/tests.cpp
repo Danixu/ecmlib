@@ -33,8 +33,6 @@ int main(int argc, char *argv[])
     ecmlib::encoder ecmEncoder = ecmlib::encoder();
     ecmlib::decoder ecmDecoder = ecmlib::decoder();
 
-    MD5 md5;
-
     // Checking the mode of the following files
     std::vector<testData> filesToCheck = {
         {"cdda.bin", ecmlib::sector_type::ST_CDDA, "93539bdd8c257a5db92d42ad0e78da80", {ecmlib::optimizations::OO_NONE}, {"93539bdd8c257a5db92d42ad0e78da80"}},
@@ -147,7 +145,10 @@ int main(int argc, char *argv[])
         }
 
         appLogger->debug("Checking the md5sum of the file.");
-        std::string inFileMD5 = md5(inBuffer.data(), inBuffer.size());
+        MD5 md5In;
+        md5In.update(inBuffer.data(), inBuffer.size());
+        md5In.finalize();
+        std::string inFileMD5 = md5In.hexdigest();
         appLogger->trace("Detected MD5: {} - Original MD5: {}", inFileMD5, filesToCheck[i].md5);
         if (inFileMD5 != filesToCheck[i].md5)
         {
@@ -185,7 +186,10 @@ int main(int argc, char *argv[])
 
             // Check the CRC
             appLogger->debug("Encoder: Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
-            std::string encodedMD5 = md5(encodedBuffer.data(), encodedSize);
+            MD5 md5enc;
+            md5enc.update(encodedBuffer.data(), encodedSize);
+            md5enc.finalize();
+            std::string encodedMD5 = md5enc.hexdigest();
             appLogger->trace("Encoder: Detected MD5: {} - Original MD5: {}", encodedMD5, filesToCheck[i].opts_md5[j]);
             if (encodedMD5 != filesToCheck[i].opts_md5[j])
             {
@@ -207,7 +211,10 @@ int main(int argc, char *argv[])
             decFile.close();
 
             appLogger->debug("Decoder: Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
-            std::string decodedMD5 = md5(decodedBuffer.data(), decodedBuffer.size());
+            MD5 md5dec;
+            md5dec.update(decodedBuffer.data(), decodedBuffer.size());
+            md5dec.finalize();
+            std::string decodedMD5 = md5dec.hexdigest();
             appLogger->trace("Decoder: Detected MD5: {} - Original MD5: {}", decodedMD5, filesToCheck[i].md5);
             if (decodedMD5 != filesToCheck[i].md5)
             {

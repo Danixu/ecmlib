@@ -462,9 +462,6 @@ namespace ecmlib
                 return sector_type::ST_CDDA;
             }
         }
-
-        mLogger->warn("Unable to determine the sector type. Report this to the developer because this might not happen.");
-        return sector_type::ST_UNKNOWN;
     }
 
     /**

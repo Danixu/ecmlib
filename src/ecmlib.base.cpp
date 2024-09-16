@@ -40,14 +40,14 @@ namespace ecmlib
         mLogger->debug("Finished the base initialization.");
     }
 
-    const int8_t base::ecc_checkpq(
+    int8_t base::ecc_checkpq(
         const uint8_t *address,
         const uint8_t *data,
         size_t majorCount,
         size_t minorCount,
         size_t majorMult,
         size_t minorInc,
-        const uint8_t *ecc)
+        const uint8_t *ecc) const
     {
         size_t size = majorCount * minorCount;
         for (size_t major = 0; major < majorCount; major++)
@@ -86,14 +86,14 @@ namespace ecmlib
         return 1;
     }
 
-    const void base::ecc_write_pq(
+    void base::ecc_write_pq(
         const uint8_t *address,
         const uint8_t *data,
         size_t majorCount,
         size_t minorCount,
         size_t majorMult,
         size_t minorInc,
-        uint8_t *ecc)
+        uint8_t *ecc) const
     {
         size_t size = majorCount * minorCount;
         for (size_t major = 0; major < majorCount; major++)

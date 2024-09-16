@@ -53,8 +53,8 @@ namespace ecmlib
         // ECM variables
         const uint8_t zeroaddress[4] = {0, 0, 0, 0};
         sector_data_link _sectorDataLink;
-        sector_type _lastEncodedType = ST_UNKNOWN;
-        optimizations _lastOptimizations = OO_NONE;
+        sector_type _lastEncodedType = sector_type::ST_UNKNOWN;
+        optimizations _lastOptimizations = optimizations::OO_NONE;
 
         // Methods
         bool inline is_gap(

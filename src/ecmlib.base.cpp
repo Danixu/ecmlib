@@ -24,8 +24,7 @@ namespace ecmlib
 
         // Generate the ECM edc and ecc data
         mLogger->trace("Generating required ecc and edc data.");
-        size_t i;
-        for (i = 0; i < 256; i++)
+        for (size_t i = 0; i < 256; i++)
         {
             uint32_t edc = i;
             size_t j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
@@ -49,7 +48,7 @@ namespace ecmlib
     {
     }
 
-    int8_t base::ecc_checkpq(
+    const int8_t base::ecc_checkpq(
         const uint8_t *address,
         const uint8_t *data,
         size_t majorCount,
@@ -59,14 +58,12 @@ namespace ecmlib
         const uint8_t *ecc)
     {
         size_t size = majorCount * minorCount;
-        size_t major;
-        for (major = 0; major < majorCount; major++)
+        for (size_t major = 0; major < majorCount; major++)
         {
             size_t index = (major >> 1) * majorMult + (major & 1);
             uint8_t ecc_a = 0;
             uint8_t ecc_b = 0;
-            size_t minor;
-            for (minor = 0; minor < minorCount; minor++)
+            for (size_t minor = 0; minor < minorCount; minor++)
             {
                 uint8_t temp;
                 if (index < 4)
@@ -88,7 +85,7 @@ namespace ecmlib
             }
             ecc_a = ecc_b_lut[ecc_f_lut[ecc_a] ^ ecc_b];
             if (
-                ecc[major] != (ecc_a) ||
+                ecc[major] != ecc_a ||
                 ecc[major + majorCount] != (ecc_a ^ ecc_b))
             {
                 return 0;
@@ -97,7 +94,7 @@ namespace ecmlib
         return 1;
     }
 
-    void base::ecc_write_pq(
+    const void base::ecc_write_pq(
         const uint8_t *address,
         const uint8_t *data,
         size_t majorCount,
@@ -107,14 +104,12 @@ namespace ecmlib
         uint8_t *ecc)
     {
         size_t size = majorCount * minorCount;
-        size_t major;
-        for (major = 0; major < majorCount; major++)
+        for (size_t major = 0; major < majorCount; major++)
         {
             size_t index = (major >> 1) * majorMult + (major & 1);
             uint8_t ecc_a = 0;
             uint8_t ecc_b = 0;
-            size_t minor;
-            for (minor = 0; minor < minorCount; minor++)
+            for (size_t minor = 0; minor < minorCount; minor++)
             {
                 uint8_t temp;
                 if (index < 4)
@@ -135,7 +130,7 @@ namespace ecmlib
                 ecc_a = ecc_f_lut[ecc_a];
             }
             ecc_a = ecc_b_lut[ecc_f_lut[ecc_a] ^ ecc_b];
-            ecc[major] = (ecc_a);
+            ecc[major] = ecc_a;
             ecc[major + majorCount] = (ecc_a ^ ecc_b);
         }
     }

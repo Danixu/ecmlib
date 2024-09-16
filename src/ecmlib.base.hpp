@@ -100,7 +100,7 @@ namespace ecmlib
 {
     const std::string ecmLoggerName = "ecmlib";
 
-    enum status_code : int8_t
+    enum class status_code : int8_t
     {
         STATUS_ERROR_UNKNOWN_ERROR = -127,
         STATUS_ERROR_NO_DATA,        // The sector was not loaded in the library
@@ -111,7 +111,7 @@ namespace ecmlib
         STATUS_OK = 0
     };
 
-    enum sector_type : uint8_t
+    enum class sector_type : uint8_t
     {
         ST_UNKNOWN = 0,
         ST_CDDA,
@@ -129,7 +129,7 @@ namespace ecmlib
         ST_MODEX
     };
 
-    enum optimizations : uint8_t
+    enum class optimizations : uint8_t
     {
         OO_NONE = 0,                       // Just copy the input. Surelly will not be used
         OO_REMOVE_SYNC = 1,                // Remove sync bytes (a.k.a first 12 bytes)
@@ -142,6 +142,10 @@ namespace ecmlib
         OO_REMOVE_GAP = 1 << 7             // If sector type is a GAP, remove the data
     };
 
+    optimizations inline operator&(optimizations a, optimizations b)
+    {
+        return static_cast<optimizations>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
+    }
     optimizations inline operator|(optimizations a, optimizations b)
     {
         return static_cast<optimizations>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
@@ -156,7 +160,7 @@ namespace ecmlib
     public:
         base();
         ~base();
-        virtual status_code load(char *buffer, uint16_t toRead) { return STATUS_ERROR_UNKNOWN_ERROR; };
+        virtual status_code load(char *buffer, uint16_t toRead) { return status_code::STATUS_ERROR_UNKNOWN_ERROR; };
 
         // Methods
         static std::string logger_name();
@@ -198,7 +202,7 @@ namespace ecmlib
         }
 
         // ecm tools
-        int8_t ecc_checkpq(
+        const int8_t ecc_checkpq(
             const uint8_t *address,
             const uint8_t *data,
             size_t major_count,
@@ -210,7 +214,7 @@ namespace ecmlib
             const uint8_t *address,
             const uint8_t *data,
             const uint8_t *ecc);
-        void ecc_write_pq(
+        const void ecc_write_pq(
             const uint8_t *address,
             const uint8_t *data,
             size_t major_count,

@@ -37,11 +37,11 @@ int main(int argc, char *argv[])
 
     // Checking the mode of the following files
     std::vector<testData> filesToCheck = {
-        {"cdda.bin", ecmlib::ST_CDDA, "93539bdd8c257a5db92d42ad0e78da80", {ecmlib::optimizations::OO_NONE}, {"93539bdd8c257a5db92d42ad0e78da80"}},
-        {"cdda_gap.bin", ecmlib::ST_CDDA_GAP, "9e297efc7a522480ef89a4a7f39ce560", {ecmlib::optimizations::OO_NONE, ecmlib::optimizations::OO_REMOVE_GAP}, {"9e297efc7a522480ef89a4a7f39ce560", "d41d8cd98f00b204e9800998ecf8427e"}},
+        {"cdda.bin", ecmlib::sector_type::ST_CDDA, "93539bdd8c257a5db92d42ad0e78da80", {ecmlib::optimizations::OO_NONE}, {"93539bdd8c257a5db92d42ad0e78da80"}},
+        {"cdda_gap.bin", ecmlib::sector_type::ST_CDDA_GAP, "9e297efc7a522480ef89a4a7f39ce560", {ecmlib::optimizations::OO_NONE, ecmlib::optimizations::OO_REMOVE_GAP}, {"9e297efc7a522480ef89a4a7f39ce560", "d41d8cd98f00b204e9800998ecf8427e"}},
         // Mode 1
         {"mode1.bin",
-         ecmlib::ST_MODE1,
+         ecmlib::sector_type::ST_MODE1,
          "15da44e7f3478dcc5fbd057d764fc952",
          {
              ecmlib::optimizations::OO_NONE,
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
         // Mode 1 GAP
         {"mode1_gap.bin",
-         ecmlib::ST_MODE1_GAP,
+         ecmlib::sector_type::ST_MODE1_GAP,
          "f1763c7f872304e73caf73a881c34988",
          {
              ecmlib::optimizations::OO_NONE,
@@ -87,28 +87,28 @@ int main(int argc, char *argv[])
          150},
         // Mode 1 RAW
         {"mode1_raw.bin",
-         ecmlib::ST_MODE1_RAW,
+         ecmlib::sector_type::ST_MODE1_RAW,
          "e5001282027e56a8feb30c9b2c5bf3ee",
          {ecmlib::optimizations::OO_NONE},
          {"e5001282027e56a8feb30c9b2c5bf3ee"},
          178},
         // Mode 2
         {"mode2.bin",
-         ecmlib::ST_MODE2,
+         ecmlib::sector_type::ST_MODE2,
          "76457f1d3c5d3b76fbe16d5ea48d5ca7",
          {ecmlib::optimizations::OO_NONE},
          {"76457f1d3c5d3b76fbe16d5ea48d5ca7"},
          182},
         // Mode 2 GAP
         {"mode2_gap.bin",
-         ecmlib::ST_MODE2_GAP,
+         ecmlib::sector_type::ST_MODE2_GAP,
          "4fcd456942777be925675cdee81c7cda",
          {ecmlib::optimizations::OO_NONE},
          {"4fcd456942777be925675cdee81c7cda"},
          759},
         // Mode 2 XA GAP
         {"mode2_xa_gap.bin",
-         ecmlib::ST_MODE2_XA_GAP,
+         ecmlib::sector_type::ST_MODE2_XA_GAP,
          "c5fb890a8853a1027b7741bf2d6a6461",
          {ecmlib::optimizations::OO_NONE},
          {"c5fb890a8853a1027b7741bf2d6a6461"},
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
         // Mode 2 XA1
         {"mode2_xa1.bin",
-         ecmlib::ST_MODE2_XA1,
+         ecmlib::sector_type::ST_MODE2_XA1,
          "6d1b2ccde687e2c19fd77bef1a70a7f2",
          {ecmlib::optimizations::OO_NONE},
          {"6d1b2ccde687e2c19fd77bef1a70a7f2"},
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 
         // Mode 2 XA1 GAP
         {"mode2_xa1_gap.bin",
-         ecmlib::ST_MODE2_XA1_GAP,
+         ecmlib::sector_type::ST_MODE2_XA1_GAP,
          "d3519e4abafbf30384ecc0a1be63310d",
          {ecmlib::optimizations::OO_NONE},
          {"d3519e4abafbf30384ecc0a1be63310d"},

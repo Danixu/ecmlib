@@ -38,22 +38,22 @@ documentation and/or software.
 #include <string>
 
 // Constants for MD5Transform routine.
-#define S11 7
-#define S12 12
-#define S13 17
-#define S14 22
-#define S21 5
-#define S22 9
-#define S23 14
-#define S24 20
-#define S31 4
-#define S32 11
-#define S33 16
-#define S34 23
-#define S41 6
-#define S42 10
-#define S43 15
-#define S44 21
+unsigned int const S11 = 7;
+unsigned int const S12 = 12;
+unsigned int const S13 = 17;
+unsigned int const S14 = 22;
+unsigned int const S21 = 5;
+unsigned int const S22 = 9;
+unsigned int const S23 = 14;
+unsigned int const S24 = 20;
+unsigned int const S31 = 4;
+unsigned int const S32 = 11;
+unsigned int const S33 = 16;
+unsigned int const S34 = 23;
+unsigned int const S41 = 6;
+unsigned int const S42 = 10;
+unsigned int const S43 = 15;
+unsigned int const S44 = 21;
 
 ///////////////////////////////////////////////
 

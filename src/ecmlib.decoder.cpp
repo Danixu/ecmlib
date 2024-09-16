@@ -13,14 +13,6 @@ namespace ecmlib
         mLogger->debug("Finished the decoder class inizialization.");
     }
 
-    /**
-     * @brief Object cleanup
-     *
-     */
-    decoder::~decoder()
-    {
-    }
-
     status_code decoder::decode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer,
                                        uint16_t outBufferSize, sector_type sectorType, uint16_t sectorNumber, optimizations opts)
     {

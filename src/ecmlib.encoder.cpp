@@ -14,14 +14,6 @@ namespace ecmlib
     }
 
     /**
-     * @brief ecmlib::encoder destructor
-     *
-     */
-    encoder::~encoder()
-    {
-    }
-
-    /**
      * @brief Optimize the sector provided by the inBuffer argument and store the data into the outBuffer
      *
      * @param inBuffer The input buffer in char *. Must contains the full sector (2352 bytes)

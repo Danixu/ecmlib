@@ -159,7 +159,6 @@ namespace ecmlib
     {
     public:
         base();
-        ~base();
         virtual status_code load(char *buffer, uint16_t toRead) { return status_code::STATUS_ERROR_UNKNOWN_ERROR; };
 
         // Methods

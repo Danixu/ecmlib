@@ -40,14 +40,6 @@ namespace ecmlib
         mLogger->debug("Finished the base initialization.");
     }
 
-    /**
-     * @brief Object cleanup
-     *
-     */
-    base::~base()
-    {
-    }
-
     const int8_t base::ecc_checkpq(
         const uint8_t *address,
         const uint8_t *data,

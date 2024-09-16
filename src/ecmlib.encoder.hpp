@@ -43,7 +43,6 @@ namespace ecmlib
     public:
         // Public Methods
         encoder();
-        ~encoder();
         sector_type get_sector_type(char *buffer);
         status_code encode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts, bool force = false);
         sector_type get_encoded_sector_type();

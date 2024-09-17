@@ -16,11 +16,12 @@ std::string hash_message(const unsigned char *message, size_t message_len, const
 {
     appLogger->trace("Hashing a {} bytes message.", message_len);
     EVP_MD_CTX *mdctx;
-    unsigned char *digest;
+    // unsigned char *digest;
+    std::vector<unsigned char> digest;
     unsigned int digest_len = 0;
 
     appLogger->trace("Creating the digest object.");
-    if ((mdctx = EVP_MD_CTX_new()) == NULL)
+    if ((mdctx = EVP_MD_CTX_new()) == nullptr)
     {
         appLogger->error("There was an error generating the new CTX object.");
         return std::string();
@@ -28,7 +29,7 @@ std::string hash_message(const unsigned char *message, size_t message_len, const
 
     EVP_MD_CTX_reset(mdctx);
 
-    if (1 != EVP_DigestInit_ex(mdctx, hashtype, NULL))
+    if (1 != EVP_DigestInit_ex(mdctx, hashtype, nullptr))
     {
         appLogger->error("There was an error initializing the new CTX object.");
         return std::string();
@@ -41,15 +42,10 @@ std::string hash_message(const unsigned char *message, size_t message_len, const
         return std::string();
     }
 
-    appLogger->trace("Reserving the digest output memory");
-    if ((digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(hashtype))) == NULL)
-    {
-        appLogger->error("There was an error reserving the digest memory.");
-        return std::string();
-    }
+    digest.resize(EVP_MD_size(hashtype));
 
     appLogger->trace("Getting the digest from the CTX object");
-    if (1 != EVP_DigestFinal_ex(mdctx, digest, &digest_len))
+    if (1 != EVP_DigestFinal_ex(mdctx, digest.data(), &digest_len))
     {
         appLogger->error("There was an error generating the digest data.");
         return std::string();
@@ -64,10 +60,6 @@ std::string hash_message(const unsigned char *message, size_t message_len, const
     {
         ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(digest[i]);
     }
-
-    // Free the digest reserved memory
-    appLogger->trace("Delete the digest object");
-    delete[] digest;
 
     // Free the CTX object
     appLogger->trace("Free the CTX object");
@@ -229,14 +221,14 @@ int main(int argc, char *argv[])
 
         ecmEncoder.load(inBuffer.data(), inBuffer.size());
         ecmlib::sector_type sectorType = ecmEncoder.get_sector_type(inBuffer.data());
-        appLogger->info("The expected type is {} and the detected type is {}.", (uint8_t)filesToCheck[i].type, (uint8_t)sectorType);
+        appLogger->info("The expected type is {} and the detected type is {}.", static_cast<uint8_t>(filesToCheck[i].type), static_cast<uint8_t>(sectorType));
         if (sectorType == filesToCheck[i].type)
         {
             appLogger->info("The detected sector type matches.");
         }
         else
         {
-            appLogger->error("The detected sector type doesn't matches the expected one ({}).", (uint8_t)filesToCheck[i].type);
+            appLogger->error("The detected sector type doesn't matches the expected one ({}).", static_cast<uint8_t>(filesToCheck[i].type));
             return 1;
         }
 
@@ -252,17 +244,17 @@ int main(int argc, char *argv[])
             encFile.close();
 
             // Check the CRC
-            appLogger->debug("Encoder: Checking the hash of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
+            appLogger->debug("Encoder: Checking the hash of the file with the optimizations {}.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
             std::string encodedHASH = hash_message((unsigned char *)encodedBuffer.data(), encodedSize, EVP_md5());
             appLogger->trace("Encoder: Detected HASH: {} - Original HASH: {}", encodedHASH, filesToCheck[i].opts_hash[j]);
             if (encodedHASH != filesToCheck[i].opts_hash[j])
             {
-                appLogger->error("The encoded file CRC with the optimizations {} doesn't matches.", (uint8_t)filesToCheck[i].opts[j]);
+                appLogger->error("The encoded file CRC with the optimizations {} doesn't matches.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
                 return 1;
             }
             else
             {
-                appLogger->debug("The encoded file CRC with the optimizations {} is correct.", (uint8_t)filesToCheck[i].opts[j]);
+                appLogger->debug("The encoded file CRC with the optimizations {} is correct.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
             }
 
             // Decode the data and check if original file can be recovered
@@ -274,17 +266,17 @@ int main(int argc, char *argv[])
             decFile.write(decodedBuffer.data(), decodedBuffer.size());
             decFile.close();
 
-            appLogger->debug("Decoder: Checking the hash of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
+            appLogger->debug("Decoder: Checking the hash of the file with the optimizations {}.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
             std::string decodedHASH = hash_message((unsigned char *)decodedBuffer.data(), decodedBuffer.size(), EVP_md5());
             appLogger->trace("Decoder: Detected HASH: {} - Original HASH: {}", decodedHASH, filesToCheck[i].hash);
             if (decodedHASH != filesToCheck[i].hash)
             {
-                appLogger->error("The decoded file CRC with the optimizations {} doesn't matches.", (uint8_t)filesToCheck[i].opts[j]);
+                appLogger->error("The decoded file CRC with the optimizations {} doesn't matches.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
                 return 1;
             }
             else
             {
-                appLogger->debug("The decoded file CRC with the optimizations {} is correct.", (uint8_t)filesToCheck[i].opts[j]);
+                appLogger->debug("The decoded file CRC with the optimizations {} is correct.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
             }
         }
     }

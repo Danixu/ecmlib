@@ -1,27 +1,98 @@
 #include "ecmlib.encoder.hpp"
 #include "ecmlib.decoder.hpp"
-#include "md5.h"
 #include <spdlog/sinks/stdout_sinks.h>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <string>
+#include <sstream>
+
+#include <openssl/evp.h>
+
+// create loggers
+auto appLogger = spdlog::stdout_logger_mt("app_logger");
+
+std::string hash_message(const unsigned char *message, size_t message_len, const EVP_MD *hashtype)
+{
+    appLogger->trace("Hashing a {} bytes message.", message_len);
+    EVP_MD_CTX *mdctx;
+    unsigned char *digest;
+    unsigned int digest_len = 0;
+
+    appLogger->trace("Creating the digest object.");
+    if ((mdctx = EVP_MD_CTX_new()) == NULL)
+    {
+        appLogger->error("There was an error generating the new CTX object.");
+        return std::string();
+    }
+
+    EVP_MD_CTX_reset(mdctx);
+
+    if (1 != EVP_DigestInit_ex(mdctx, hashtype, NULL))
+    {
+        appLogger->error("There was an error initializing the new CTX object.");
+        return std::string();
+    }
+
+    appLogger->trace("Adding data to the digest object");
+    if (1 != EVP_DigestUpdate(mdctx, message, message_len))
+    {
+        appLogger->error("There was an error updating the data.");
+        return std::string();
+    }
+
+    appLogger->trace("Reserving the digest output memory");
+    if ((digest = (unsigned char *)OPENSSL_malloc(EVP_MD_size(hashtype))) == NULL)
+    {
+        appLogger->error("There was an error reserving the digest memory.");
+        return std::string();
+    }
+
+    appLogger->trace("Getting the digest from the CTX object");
+    if (1 != EVP_DigestFinal_ex(mdctx, digest, &digest_len))
+    {
+        appLogger->error("There was an error generating the digest data.");
+        return std::string();
+    }
+
+    // Generate the stringstream to store the hex characters
+    appLogger->trace("Generating the output stream data in hex. Length: {}", digest_len);
+    std::stringstream ss("");
+
+    // Output the hex characters
+    for (int i = 0; i < digest_len; i++)
+    {
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(digest[i]);
+    }
+
+    // Free the digest reserved memory
+    appLogger->trace("Delete the digest object");
+    delete[] digest;
+
+    // Free the CTX object
+    appLogger->trace("Free the CTX object");
+    EVP_MD_CTX_free(mdctx);
+
+    // Return the string
+    appLogger->trace("Returning the string");
+    return ss.str();
+}
 
 struct testData
 {
     std::string file;
     ecmlib::sector_type type;
-    std::string md5 = "";
+    std::string hash = "";
     std::vector<ecmlib::optimizations> opts;
-    std::vector<std::string> opts_md5;
+    std::vector<std::string> opts_hash;
     uint16_t sector_number = 0;
 };
 
 int main(int argc, char *argv[])
 {
-    // create loggers
-    auto appLogger = spdlog::stdout_logger_mt("app_logger");
-    appLogger->set_level(spdlog::level::trace);
+    // Set logs levels
     auto libLogger = spdlog::stdout_logger_mt(ecmlib::encoder::logger_name());
+    appLogger->set_level(spdlog::level::trace);
     libLogger->set_level(spdlog::level::trace);
 
     // Input buffer
@@ -78,7 +149,6 @@ int main(int argc, char *argv[])
           "a65f4a9043fb7094ea3750fb96b8db80",
           "c59a8765d6d223f4cf864ff658acfa02",
           "509bdb286ce0e2ce9f8daf7308375970",
-
           "a1a39027338ba0abddd08ef81779e888",
           "7caad74b7cf9e03c5ea5de3309f3060d",
           "d41d8cd98f00b204e9800998ecf8427e"},
@@ -144,13 +214,10 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        appLogger->debug("Checking the md5sum of the file.");
-        MD5 md5In;
-        md5In.update(inBuffer.data(), inBuffer.size());
-        md5In.finalize();
-        std::string inFileMD5 = md5In.hexdigest();
-        appLogger->trace("Detected MD5: {} - Original MD5: {}", inFileMD5, filesToCheck[i].md5);
-        if (inFileMD5 != filesToCheck[i].md5)
+        appLogger->debug("Checking the hash of the file.");
+        std::string inFileHASH = hash_message((unsigned char *)inBuffer.data(), inBuffer.size(), EVP_md5());
+        appLogger->trace("Detected HASH: {} - Original HASH: {}", inFileHASH, filesToCheck[i].hash);
+        if (inFileHASH != filesToCheck[i].hash)
         {
             appLogger->error("The input file CRC doesn't matches.");
             return 1;
@@ -185,13 +252,10 @@ int main(int argc, char *argv[])
             encFile.close();
 
             // Check the CRC
-            appLogger->debug("Encoder: Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
-            MD5 md5enc;
-            md5enc.update(encodedBuffer.data(), encodedSize);
-            md5enc.finalize();
-            std::string encodedMD5 = md5enc.hexdigest();
-            appLogger->trace("Encoder: Detected MD5: {} - Original MD5: {}", encodedMD5, filesToCheck[i].opts_md5[j]);
-            if (encodedMD5 != filesToCheck[i].opts_md5[j])
+            appLogger->debug("Encoder: Checking the hash of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
+            std::string encodedHASH = hash_message((unsigned char *)encodedBuffer.data(), encodedSize, EVP_md5());
+            appLogger->trace("Encoder: Detected HASH: {} - Original HASH: {}", encodedHASH, filesToCheck[i].opts_hash[j]);
+            if (encodedHASH != filesToCheck[i].opts_hash[j])
             {
                 appLogger->error("The encoded file CRC with the optimizations {} doesn't matches.", (uint8_t)filesToCheck[i].opts[j]);
                 return 1;
@@ -210,13 +274,10 @@ int main(int argc, char *argv[])
             decFile.write(decodedBuffer.data(), decodedBuffer.size());
             decFile.close();
 
-            appLogger->debug("Decoder: Checking the md5sum of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
-            MD5 md5dec;
-            md5dec.update(decodedBuffer.data(), decodedBuffer.size());
-            md5dec.finalize();
-            std::string decodedMD5 = md5dec.hexdigest();
-            appLogger->trace("Decoder: Detected MD5: {} - Original MD5: {}", decodedMD5, filesToCheck[i].md5);
-            if (decodedMD5 != filesToCheck[i].md5)
+            appLogger->debug("Decoder: Checking the hash of the file with the optimizations {}.", (uint8_t)filesToCheck[i].opts[j]);
+            std::string decodedHASH = hash_message((unsigned char *)decodedBuffer.data(), decodedBuffer.size(), EVP_md5());
+            appLogger->trace("Decoder: Detected HASH: {} - Original HASH: {}", decodedHASH, filesToCheck[i].hash);
+            if (decodedHASH != filesToCheck[i].hash)
             {
                 appLogger->error("The decoded file CRC with the optimizations {} doesn't matches.", (uint8_t)filesToCheck[i].opts[j]);
                 return 1;

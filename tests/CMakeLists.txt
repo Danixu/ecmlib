@@ -4,15 +4,15 @@ project(tests)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output)
 
 ## Static Build
-add_executable(tests_static md5.cpp tests.cpp)
+add_executable(tests_static tests.cpp)
 set_target_properties(tests_static PROPERTIES CXX_STANDARD 17)
-target_link_libraries(tests_static PRIVATE ecmlib_static)
+target_link_libraries(tests_static PRIVATE ecmlib_static crypto)
 target_include_directories(tests_static PUBLIC "../src" "../libs/spdlog/include")
 
 ## Static Build
-add_executable(tests_shared md5.cpp tests.cpp)
+add_executable(tests_shared tests.cpp)
 set_target_properties(tests_shared PROPERTIES CXX_STANDARD 17)
-target_link_libraries(tests_shared PRIVATE ecmlib_shared)
+target_link_libraries(tests_shared PRIVATE ecmlib_shared crypto )
 target_include_directories(tests_shared PUBLIC "../src" "../libs/spdlog/include")
 
 ## Copy the binary files for testing

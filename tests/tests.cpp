@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include <format>
 
 #include <openssl/evp.h>
 
@@ -16,7 +17,6 @@ std::string hash_message(const unsigned char *message, size_t message_len, const
 {
     appLogger->trace("Hashing a {} bytes message.", message_len);
     EVP_MD_CTX *mdctx;
-    // unsigned char *digest;
     std::vector<unsigned char> digest;
     unsigned int digest_len = 0;
 
@@ -53,12 +53,12 @@ std::string hash_message(const unsigned char *message, size_t message_len, const
 
     // Generate the stringstream to store the hex characters
     appLogger->trace("Generating the output stream data in hex. Length: {}", digest_len);
-    std::stringstream ss("");
+    std::string hex = "";
 
     // Output the hex characters
     for (int i = 0; i < digest_len; i++)
     {
-        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(digest[i]);
+        hex += std::format("{:02x}", digest[i]);
     }
 
     // Free the CTX object
@@ -67,7 +67,7 @@ std::string hash_message(const unsigned char *message, size_t message_len, const
 
     // Return the string
     appLogger->trace("Returning the string");
-    return ss.str();
+    return hex;
 }
 
 struct testData
@@ -93,8 +93,8 @@ int main(int argc, char *argv[])
     std::vector<char> decodedBuffer(2352);
 
     // Initialize the ecmlib classes
-    ecmlib::encoder ecmEncoder = ecmlib::encoder();
-    ecmlib::decoder ecmDecoder = ecmlib::decoder();
+    auto ecmEncoder = ecmlib::encoder();
+    auto ecmDecoder = ecmlib::decoder();
 
     // Checking the mode of the following files
     std::vector<testData> filesToCheck = {
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
             appLogger->debug("The input file CRC is correct.");
         }
 
-        ecmEncoder.load(inBuffer.data(), inBuffer.size());
+        ecmEncoder.load(inBuffer.data(), (uint16_t)inBuffer.size());
         ecmlib::sector_type sectorType = ecmEncoder.get_sector_type(inBuffer.data());
         appLogger->info("The expected type is {} and the detected type is {}.", static_cast<uint8_t>(filesToCheck[i].type), static_cast<uint8_t>(sectorType));
         if (sectorType == filesToCheck[i].type)
@@ -236,10 +236,10 @@ int main(int argc, char *argv[])
         {
             uint16_t encodedSize = 0;
             //  Optimize the sector
-            ecmEncoder.encode_sector(inBuffer.data(), inBuffer.size(), encodedBuffer.data(), encodedBuffer.size(), encodedSize, filesToCheck[i].opts[j]);
+            ecmEncoder.encode_sector(inBuffer.data(), (uint16_t)inBuffer.size(), encodedBuffer.data(), (uint16_t)encodedBuffer.size(), encodedSize, filesToCheck[i].opts[j]);
 
             // Write the output file for debugging
-            std::ofstream encFile(filesToCheck[i].file + ".outenc." + std::to_string(j));
+            std::ofstream encFile(std::format("{}.outenc.{}", filesToCheck[i].file, j));
             encFile.write(encodedBuffer.data(), encodedSize);
             encFile.close();
 
@@ -258,11 +258,10 @@ int main(int argc, char *argv[])
             }
 
             // Decode the data and check if original file can be recovered
-
-            ecmDecoder.decode_sector(encodedBuffer.data(), encodedSize, decodedBuffer.data(), decodedBuffer.size(), filesToCheck[i].type, filesToCheck[i].sector_number, filesToCheck[i].opts[j]);
+            ecmDecoder.decode_sector(encodedBuffer.data(), encodedSize, decodedBuffer.data(), (uint16_t)decodedBuffer.size(), filesToCheck[i].type, filesToCheck[i].sector_number, filesToCheck[i].opts[j]);
 
             // Write the output file for debugging
-            std::ofstream decFile(filesToCheck[i].file + ".outdec." + std::to_string(j));
+            std::ofstream decFile(std::format("{}.outdec.{}", filesToCheck[i].file, j));
             decFile.write(decodedBuffer.data(), decodedBuffer.size());
             decFile.close();
 

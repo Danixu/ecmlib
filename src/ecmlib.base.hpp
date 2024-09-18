@@ -190,7 +190,7 @@ namespace ecmlib
 
         inline uint32_t edc_compute(
             const char *src,
-            size_t size)
+            size_t size) const
         {
             uint32_t edc = 0;
             for (; size; size--)
@@ -212,7 +212,7 @@ namespace ecmlib
         int8_t ecc_check_sector(
             const uint8_t *address,
             const uint8_t *data,
-            const uint8_t *ecc);
+            const uint8_t *ecc) const;
         void ecc_write_pq(
             const uint8_t *address,
             const uint8_t *data,
@@ -224,13 +224,16 @@ namespace ecmlib
         void ecc_write_sector(
             const uint8_t *address,
             const uint8_t *data,
-            uint8_t *ecc);
+            uint8_t *ecc) const;
 
     private:
         // LUTs used for computing ECC/EDC
-        uint8_t ecc_f_lut[256];
-        uint8_t ecc_b_lut[256];
-        uint32_t edc_lut[256];
+        std::vector<uint8_t> ecc_f_lut;
+        std::vector<uint8_t> ecc_b_lut;
+        std::vector<uint32_t> edc_lut;
+        // uint8_t ecc_f_lut[256];
+        // uint8_t ecc_b_lut[256];
+        // uint32_t edc_lut[256];
     };
 }
 

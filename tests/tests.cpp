@@ -82,6 +82,8 @@ struct testData
 
 int main(int argc, char *argv[])
 {
+    using enum ecmlib::optimizations;
+    using enum ecmlib::sector_type;
     // Set logs levels
     auto libLogger = spdlog::stdout_logger_mt(ecmlib::encoder::logger_name());
     appLogger->set_level(spdlog::level::trace);
@@ -98,20 +100,20 @@ int main(int argc, char *argv[])
 
     // Checking the mode of the following files
     std::vector<testData> filesToCheck = {
-        {"cdda.bin", ecmlib::sector_type::ST_CDDA, "93539bdd8c257a5db92d42ad0e78da80", {ecmlib::optimizations::OO_NONE}, {"93539bdd8c257a5db92d42ad0e78da80"}},
-        {"cdda_gap.bin", ecmlib::sector_type::ST_CDDA_GAP, "9e297efc7a522480ef89a4a7f39ce560", {ecmlib::optimizations::OO_NONE, ecmlib::optimizations::OO_REMOVE_GAP}, {"9e297efc7a522480ef89a4a7f39ce560", "d41d8cd98f00b204e9800998ecf8427e"}},
+        {"cdda.bin", ST_CDDA, "93539bdd8c257a5db92d42ad0e78da80", {OO_NONE}, {"93539bdd8c257a5db92d42ad0e78da80"}},
+        {"cdda_gap.bin", ST_CDDA_GAP, "9e297efc7a522480ef89a4a7f39ce560", {OO_NONE, OO_REMOVE_GAP}, {"9e297efc7a522480ef89a4a7f39ce560", "d41d8cd98f00b204e9800998ecf8427e"}},
         // Mode 1
         {"mode1.bin",
-         ecmlib::sector_type::ST_MODE1,
+         ST_MODE1,
          "15da44e7f3478dcc5fbd057d764fc952",
          {
-             ecmlib::optimizations::OO_NONE,
-             ecmlib::optimizations::OO_REMOVE_SYNC,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE | ecmlib::optimizations::OO_REMOVE_EDC,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE | ecmlib::optimizations::OO_REMOVE_EDC | ecmlib::optimizations::OO_REMOVE_BLANKS,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE | ecmlib::optimizations::OO_REMOVE_EDC | ecmlib::optimizations::OO_REMOVE_BLANKS | ecmlib::optimizations::OO_REMOVE_ECC,
+             OO_NONE,
+             OO_REMOVE_SYNC,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE | OO_REMOVE_EDC,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE | OO_REMOVE_EDC | OO_REMOVE_BLANKS,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE | OO_REMOVE_EDC | OO_REMOVE_BLANKS | OO_REMOVE_ECC,
          },
          {"15da44e7f3478dcc5fbd057d764fc952",
           "715d49c220eebd24cd74e35925b28227",
@@ -124,17 +126,17 @@ int main(int argc, char *argv[])
 
         // Mode 1 GAP
         {"mode1_gap.bin",
-         ecmlib::sector_type::ST_MODE1_GAP,
+         ST_MODE1_GAP,
          "f1763c7f872304e73caf73a881c34988",
          {
-             ecmlib::optimizations::OO_NONE,
-             ecmlib::optimizations::OO_REMOVE_SYNC,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE | ecmlib::optimizations::OO_REMOVE_GAP,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE | ecmlib::optimizations::OO_REMOVE_GAP | ecmlib::optimizations::OO_REMOVE_EDC,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE | ecmlib::optimizations::OO_REMOVE_GAP | ecmlib::optimizations::OO_REMOVE_EDC | ecmlib::optimizations::OO_REMOVE_BLANKS,
-             ecmlib::optimizations::OO_REMOVE_SYNC | ecmlib::optimizations::OO_REMOVE_MSF | ecmlib::optimizations::OO_REMOVE_MODE | ecmlib::optimizations::OO_REMOVE_GAP | ecmlib::optimizations::OO_REMOVE_EDC | ecmlib::optimizations::OO_REMOVE_BLANKS | ecmlib::optimizations::OO_REMOVE_ECC,
+             OO_NONE,
+             OO_REMOVE_SYNC,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE | OO_REMOVE_GAP,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE | OO_REMOVE_GAP | OO_REMOVE_EDC,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE | OO_REMOVE_GAP | OO_REMOVE_EDC | OO_REMOVE_BLANKS,
+             OO_REMOVE_SYNC | OO_REMOVE_MSF | OO_REMOVE_MODE | OO_REMOVE_GAP | OO_REMOVE_EDC | OO_REMOVE_BLANKS | OO_REMOVE_ECC,
          },
          {"f1763c7f872304e73caf73a881c34988",
           "dedf21a62c2d2072eaba4279ce0aec22",
@@ -147,47 +149,47 @@ int main(int argc, char *argv[])
          150},
         // Mode 1 RAW
         {"mode1_raw.bin",
-         ecmlib::sector_type::ST_MODE1_RAW,
+         ST_MODE1_RAW,
          "e5001282027e56a8feb30c9b2c5bf3ee",
-         {ecmlib::optimizations::OO_NONE},
+         {OO_NONE},
          {"e5001282027e56a8feb30c9b2c5bf3ee"},
          178},
         // Mode 2
         {"mode2.bin",
-         ecmlib::sector_type::ST_MODE2,
+         ST_MODE2,
          "76457f1d3c5d3b76fbe16d5ea48d5ca7",
-         {ecmlib::optimizations::OO_NONE},
+         {OO_NONE},
          {"76457f1d3c5d3b76fbe16d5ea48d5ca7"},
          182},
         // Mode 2 GAP
         {"mode2_gap.bin",
-         ecmlib::sector_type::ST_MODE2_GAP,
+         ST_MODE2_GAP,
          "4fcd456942777be925675cdee81c7cda",
-         {ecmlib::optimizations::OO_NONE},
+         {OO_NONE},
          {"4fcd456942777be925675cdee81c7cda"},
          759},
         // Mode 2 XA GAP
         {"mode2_xa_gap.bin",
-         ecmlib::sector_type::ST_MODE2_XA_GAP,
+         ST_MODE2_XA_GAP,
          "c5fb890a8853a1027b7741bf2d6a6461",
-         {ecmlib::optimizations::OO_NONE},
+         {OO_NONE},
          {"c5fb890a8853a1027b7741bf2d6a6461"},
 
          759},
 
         // Mode 2 XA1
         {"mode2_xa1.bin",
-         ecmlib::sector_type::ST_MODE2_XA1,
+         ST_MODE2_XA1,
          "6d1b2ccde687e2c19fd77bef1a70a7f2",
-         {ecmlib::optimizations::OO_NONE},
+         {OO_NONE},
          {"6d1b2ccde687e2c19fd77bef1a70a7f2"},
          759},
 
         // Mode 2 XA1 GAP
         {"mode2_xa1_gap.bin",
-         ecmlib::sector_type::ST_MODE2_XA1_GAP,
+         ST_MODE2_XA1_GAP,
          "d3519e4abafbf30384ecc0a1be63310d",
-         {ecmlib::optimizations::OO_NONE},
+         {OO_NONE},
          {"d3519e4abafbf30384ecc0a1be63310d"},
          150}};
 

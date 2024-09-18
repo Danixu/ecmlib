@@ -38,12 +38,24 @@ namespace ecmlib
     public:
         // Public Methods
         decoder();
+        ~decoder() = default;
         status_code decode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer,
                                   uint16_t outBufferSize, sector_type sectorType, uint16_t sectorNumber, optimizations opts);
 
     private:
         // ECM variables
         const uint8_t zeroaddress[4] = {0, 0, 0, 0};
+
+        // ecm tools inline functions
+        static inline void put32lsb(
+            char *output,
+            uint32_t value)
+        {
+            output[0] = (char)(value);
+            output[1] = (char)(value >> 8);
+            output[2] = (char)(value >> 16);
+            output[3] = (char)(value >> 24);
+        }
 
         // Methods
         std::vector<char> inline sector_to_time(uint32_t sectorNumber);

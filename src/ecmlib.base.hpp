@@ -145,15 +145,15 @@ namespace ecmlib
 
     optimizations inline operator&(optimizations a, optimizations b)
     {
-        return static_cast<optimizations>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
+        return static_cast<optimizations>(static_cast<std::byte>(a) & static_cast<std::byte>(b));
     }
     optimizations inline operator|(optimizations a, optimizations b)
     {
-        return static_cast<optimizations>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+        return static_cast<optimizations>(static_cast<std::byte>(a) | static_cast<std::byte>(b));
     }
     optimizations inline operator^=(optimizations a, optimizations b)
     {
-        return static_cast<optimizations>(static_cast<uint8_t>(a) ^ static_cast<uint8_t>(b));
+        return static_cast<optimizations>(static_cast<std::byte>(a) ^ static_cast<std::byte>(b));
     }
 
     class base

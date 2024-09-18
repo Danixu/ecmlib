@@ -25,7 +25,7 @@ namespace ecmlib
         mLogger->debug("Finished the decoder class inizialization.");
     }
 
-    status_code decoder::decode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer,
+    status_code decoder::decode_sector(const char *inBuffer, char *outBuffer,
                                        uint16_t outBufferSize, sector_type sectorType, uint16_t sectorNumber, optimizations opts)
     {
         // Check if the output buffer can store the full sector

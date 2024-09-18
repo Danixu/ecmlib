@@ -195,8 +195,7 @@ int main(int argc, char *argv[])
 
     for (uint8_t i = 0; i < filesToCheck.size(); i++)
     {
-        std::ifstream inFile(filesToCheck[i].file);
-        if (inFile.is_open())
+        if (std::ifstream inFile(filesToCheck[i].file); inFile.is_open())
         {
             appLogger->info("Reading the file \"{}\".", filesToCheck[i].file);
             inFile.read(inBuffer.data(), inBuffer.size());
@@ -260,7 +259,7 @@ int main(int argc, char *argv[])
             }
 
             // Decode the data and check if original file can be recovered
-            ecmDecoder.decode_sector(encodedBuffer.data(), encodedSize, decodedBuffer.data(), (uint16_t)decodedBuffer.size(), filesToCheck[i].type, filesToCheck[i].sector_number, filesToCheck[i].opts[j]);
+            ecmDecoder.decode_sector(encodedBuffer.data(), decodedBuffer.data(), (uint16_t)decodedBuffer.size(), filesToCheck[i].type, filesToCheck[i].sector_number, filesToCheck[i].opts[j]);
 
             // Write the output file for debugging
             std::ofstream decFile(std::format("{}.outdec.{}", filesToCheck[i].file, j));

@@ -70,10 +70,10 @@ namespace ecmlib
 
         // Methods
         bool inline is_gap(
-            char *sector,
+            const char *sector,
             size_t length) const;
         uint16_t get_encoded_size(sector_type sectorType, optimizations opts) const;
-        status_code check_optimizations(char *buffer, optimizations opts);
+        status_code check_optimizations(const char *buffer, optimizations opts);
     };
 }
 

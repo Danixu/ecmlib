@@ -50,8 +50,11 @@ namespace ecmlib
         optimizations get_encoded_optimizations();
 
     private:
+        // Logging
+        std::shared_ptr<spdlog::logger> mLogger;
+
         // ECM variables
-        const uint8_t zeroaddress[4] = {0, 0, 0, 0};
+        const std::vector<uint8_t> zeroaddress = {0, 0, 0, 0};
         sector_data_link _sectorDataLink;
         sector_type _lastEncodedType = sector_type::ST_UNKNOWN;
         optimizations _lastOptimizations = optimizations::OO_NONE;

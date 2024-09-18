@@ -1,5 +1,4 @@
 #include "ecmlib.base.hpp"
-#include <spdlog/sinks/stdout_sinks.h>
 
 namespace ecmlib
 {

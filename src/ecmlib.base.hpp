@@ -93,6 +93,7 @@
 #include <vector>
 #include <utility>
 #include "spdlog/spdlog.h"
+#include <spdlog/sinks/stdout_sinks.h>
 
 #ifndef __ECMLIB_BASE_H__
 #define __ECMLIB_BASE_H__
@@ -167,9 +168,6 @@ namespace ecmlib
         static std::string logger_name();
 
     protected:
-        // Logging
-        std::shared_ptr<spdlog::logger> mLogger;
-
         // ecm tools inline functions
         inline uint32_t edc_compute(
             const char *src,
@@ -210,6 +208,9 @@ namespace ecmlib
             uint8_t *ecc) const;
 
     private:
+        // Logging
+        std::shared_ptr<spdlog::logger> mLogger;
+
         // LUTs used for computing ECC/EDC
         std::vector<uint8_t> ecc_f_lut;
         std::vector<uint8_t> ecc_b_lut;

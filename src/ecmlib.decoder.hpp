@@ -38,13 +38,15 @@ namespace ecmlib
     public:
         // Public Methods
         decoder();
-        ~decoder() = default;
         status_code decode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer,
                                   uint16_t outBufferSize, sector_type sectorType, uint16_t sectorNumber, optimizations opts);
 
     private:
+        // Logging
+        std::shared_ptr<spdlog::logger> mLogger;
+
         // ECM variables
-        const uint8_t zeroaddress[4] = {0, 0, 0, 0};
+        const std::vector<uint8_t> zeroaddress = {0, 0, 0, 0};
 
         // ecm tools inline functions
         static inline void put32lsb(

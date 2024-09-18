@@ -46,8 +46,8 @@ namespace ecmlib
         encoder();
         sector_type get_sector_type(char *buffer);
         status_code encode_sector(char *inBuffer, uint16_t inBufferSize, char *outBuffer, uint16_t outBufferSize, uint16_t &encodedDataSize, optimizations opts, bool force = false);
-        sector_type get_encoded_sector_type();
-        optimizations get_encoded_optimizations();
+        sector_type get_encoded_sector_type() const;
+        optimizations get_encoded_optimizations() const;
 
     private:
         // Logging
@@ -71,8 +71,8 @@ namespace ecmlib
         // Methods
         bool inline is_gap(
             char *sector,
-            size_t length);
-        uint16_t get_encoded_size(sector_type sectorType, optimizations opts);
+            size_t length) const;
+        uint16_t get_encoded_size(sector_type sectorType, optimizations opts) const;
         status_code check_optimizations(char *buffer, optimizations opts);
     };
 }

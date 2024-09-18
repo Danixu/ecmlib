@@ -60,7 +60,7 @@ namespace ecmlib
         }
 
         // Methods
-        std::vector<char> inline sector_to_time(uint32_t sectorNumber);
+        std::vector<char> inline sector_to_time(uint32_t sectorNumber) const;
     };
 }
 

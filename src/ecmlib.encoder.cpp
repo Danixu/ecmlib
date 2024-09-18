@@ -1,5 +1,7 @@
 #include "ecmlib.encoder.hpp"
 
+#include <utility>
+
 namespace ecmlib
 {
     /**
@@ -75,7 +77,7 @@ namespace ecmlib
         // SYNC Data
         //
         //
-        if (!static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_SYNC) &&
+        if (!std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_SYNC) &&
             (_lastEncodedType != sector_type::ST_CDDA && _lastEncodedType != sector_type::ST_CDDA_GAP))
         {
             // All but the RAW CDDA sector will have sync data. If the optimization to remove it is not set, then copy it.
@@ -88,7 +90,7 @@ namespace ecmlib
         // MSF Data
         //
         //
-        if (!static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_MSF) &&
+        if (!std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_MSF) &&
             (_lastEncodedType != sector_type::ST_CDDA && _lastEncodedType != sector_type::ST_CDDA_GAP))
         {
             // All but the RAW CDDA sector will have MSF data. If the optimization to remove it is not set, then copy it.
@@ -101,7 +103,7 @@ namespace ecmlib
         // Mode Data
         //
         //
-        if (!static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_MODE) &&
+        if (!std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_MODE) &&
             (_lastEncodedType != sector_type::ST_CDDA && _lastEncodedType != sector_type::ST_CDDA_GAP))
         {
             // All but the RAW CDDA sector will have MODE data. If the optimization to remove it is not set, then copy it.
@@ -121,7 +123,7 @@ namespace ecmlib
             _lastEncodedType == sector_type::ST_MODE2_XA2_GAP)
         {
             // Only Mode 2 XA will have FLAGS
-            if (!static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_REDUNDANT_FLAG))
+            if (!std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_REDUNDANT_FLAG))
             {
                 // If the optimization to remove it is not set, then fully copy both.
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0X10, 0x8);
@@ -147,7 +149,7 @@ namespace ecmlib
             // Set the data position
             _sectorDataLink.dataPosition = outBuffer + encodedDataSize;
             // CDDA sectors are fully raw, so all will be copied if it's not a GAP with the GAP optimization enabled.
-            if (_lastEncodedType == sector_type::ST_CDDA || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_GAP))
+            if (_lastEncodedType == sector_type::ST_CDDA || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_GAP))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer, 0x930);
                 encodedDataSize += 0x930;
@@ -166,7 +168,7 @@ namespace ecmlib
             // Set the data position
             _sectorDataLink.dataPosition = outBuffer + encodedDataSize;
             // Mode1 sectors starts at 0x10 and ends at 0x80F
-            if (_lastEncodedType == sector_type::ST_MODE1 || _lastEncodedType == sector_type::ST_MODE1_RAW || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_GAP))
+            if (_lastEncodedType == sector_type::ST_MODE1 || _lastEncodedType == sector_type::ST_MODE1_RAW || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_GAP))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x10, 0x800);
                 encodedDataSize += 0x800;
@@ -183,7 +185,7 @@ namespace ecmlib
             // Set the data position
             _sectorDataLink.dataPosition = outBuffer + encodedDataSize;
             // Mode2 sectors starts at 0x10 and ends at 0x92F
-            if (_lastEncodedType == sector_type::ST_MODE2 || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_GAP))
+            if (_lastEncodedType == sector_type::ST_MODE2 || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_GAP))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x10, 0x920);
                 encodedDataSize += 0x920;
@@ -202,7 +204,7 @@ namespace ecmlib
             // Set the data position
             _sectorDataLink.dataPosition = outBuffer + encodedDataSize;
             // Mode1 sectors starts at 0x18 and ends at 0x817
-            if (_lastEncodedType == sector_type::ST_MODE2_XA1 || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_GAP))
+            if (_lastEncodedType == sector_type::ST_MODE2_XA1 || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_GAP))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x18, 0x800);
                 encodedDataSize += 0x800;
@@ -219,7 +221,7 @@ namespace ecmlib
             // Set the data position
             _sectorDataLink.dataPosition = outBuffer + encodedDataSize;
             // Mode2 XA2 sectors starts at 0x18 and ends at 0x92B
-            if (_lastEncodedType == sector_type::ST_MODE2_XA2 || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_GAP))
+            if (_lastEncodedType == sector_type::ST_MODE2_XA2 || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_GAP))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x18, 0x914);
                 encodedDataSize += 0x914;
@@ -246,7 +248,7 @@ namespace ecmlib
         case sector_type::ST_MODE1_RAW:
         case sector_type::ST_MODE1_GAP:
             // Mode1 EDC starts at 0x810 and ends at 0x813
-            if (_lastEncodedType == sector_type::ST_MODE1_RAW || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_EDC))
+            if (_lastEncodedType == sector_type::ST_MODE1_RAW || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_EDC))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x810, 0x4);
                 encodedDataSize += 4;
@@ -258,7 +260,7 @@ namespace ecmlib
         case sector_type::ST_MODE2_XA1_GAP:
         case sector_type::ST_MODE2_XA_GAP:
             // Mode2 XA1 EDC starts at 0x818 and ends at 0x81B
-            if (!static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_EDC))
+            if (!std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_EDC))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x818, 0x4);
                 encodedDataSize += 4;
@@ -269,7 +271,7 @@ namespace ecmlib
         case sector_type::ST_MODE2_XA2:
         case sector_type::ST_MODE2_XA2_GAP:
             // Mode2 XA2 EDC starts at 0x92C and ends at 0x92F
-            if (!static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_EDC))
+            if (!std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_EDC))
             {
                 std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x92C, 0x4);
                 encodedDataSize += 4;
@@ -289,7 +291,7 @@ namespace ecmlib
         if ((_lastEncodedType == sector_type::ST_MODE1 ||
              _lastEncodedType == sector_type::ST_MODE1_GAP ||
              _lastEncodedType == sector_type::ST_MODE1_RAW) &&
-            (_lastEncodedType == sector_type::ST_MODE1_RAW || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_BLANKS)))
+            (_lastEncodedType == sector_type::ST_MODE1_RAW || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_BLANKS)))
         {
             // Mode1 Blank data starts at 0x814 and ends at 0x81B
             std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x814, 0x8);
@@ -307,7 +309,7 @@ namespace ecmlib
              _lastEncodedType == sector_type::ST_MODE2_XA1 ||
              _lastEncodedType == sector_type::ST_MODE2_XA1_GAP ||
              _lastEncodedType == sector_type::ST_MODE2_XA_GAP) &&
-            (_lastEncodedType == sector_type::ST_MODE1_RAW || !static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_ECC)))
+            (_lastEncodedType == sector_type::ST_MODE1_RAW || !std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_ECC)))
         {
             std::memcpy(outBuffer + encodedDataSize, inBuffer + 0x81C, 0x114);
             encodedDataSize += 0x114;
@@ -473,7 +475,7 @@ namespace ecmlib
      *
      * @return sector_type
      */
-    sector_type encoder::get_encoded_sector_type()
+    sector_type encoder::get_encoded_sector_type() const
     {
         return _lastEncodedType;
     }
@@ -483,7 +485,7 @@ namespace ecmlib
      *
      * @return optimizations
      */
-    optimizations encoder::get_encoded_optimizations()
+    optimizations encoder::get_encoded_optimizations() const
     {
         return _lastOptimizations;
     }
@@ -496,7 +498,7 @@ namespace ecmlib
      * @return true The sectors are a gap
      * @return false Any or all sectors are not zeroed, so is not a gap.
      */
-    bool inline encoder::is_gap(char *sector, size_t length)
+    bool inline encoder::is_gap(char *sector, size_t length) const
     {
         mLogger->trace("Checking {} bytes for a gap.", length);
         for (size_t i = 0; i < length; i++)
@@ -512,7 +514,7 @@ namespace ecmlib
         return true;
     }
 
-    uint16_t encoder::get_encoded_size(sector_type sectorType, optimizations opts)
+    uint16_t encoder::get_encoded_size(sector_type sectorType, optimizations opts) const
     {
         uint16_t outSize = 0;
         switch (sectorType)
@@ -520,7 +522,7 @@ namespace ecmlib
         case sector_type::ST_CDDA:
         case sector_type::ST_CDDA_GAP:
             mLogger->trace("CDDA Detected.");
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_GAP) || sectorType == sector_type::ST_CDDA)
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_GAP) || sectorType == sector_type::ST_CDDA)
             {
                 outSize = 2352;
             }
@@ -534,31 +536,31 @@ namespace ecmlib
         case sector_type::ST_MODE1_GAP:
         case sector_type::ST_MODE1_RAW:
             mLogger->trace("MODE1 Detected.");
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_SYNC))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_SYNC))
                 outSize += 0xC;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MSF))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MSF))
                 outSize += 0x3;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MODE))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MODE))
                 outSize += 0x1;
             // Data is copied unless is GAP
             if (sectorType != sector_type::ST_MODE1_GAP)
                 outSize += 0x800;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_EDC) || sectorType == sector_type::ST_MODE1_RAW)
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_EDC) || sectorType == sector_type::ST_MODE1_RAW)
                 outSize += 0x4;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_BLANKS) || sectorType == sector_type::ST_MODE1_RAW)
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_BLANKS) || sectorType == sector_type::ST_MODE1_RAW)
                 outSize += 0x8;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_ECC) || sectorType == sector_type::ST_MODE1_RAW)
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_ECC) || sectorType == sector_type::ST_MODE1_RAW)
                 outSize += 0x114;
             break;
 
         case sector_type::ST_MODE2:
         case sector_type::ST_MODE2_GAP:
             mLogger->trace("MODE2 Detected.");
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_SYNC))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_SYNC))
                 outSize += 0xC;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MSF))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MSF))
                 outSize += 0x3;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MODE))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MODE))
                 outSize += 0x1;
             // Data is copied unless is GAP
             if (sectorType != sector_type::ST_MODE2_GAP)
@@ -569,42 +571,42 @@ namespace ecmlib
         case sector_type::ST_MODE2_XA1_GAP:
         case sector_type::ST_MODE2_XA_GAP:
             mLogger->trace("MODE2 XA1 Detected.");
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_SYNC))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_SYNC))
                 outSize += 0xC;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MSF))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MSF))
                 outSize += 0x3;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MODE))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MODE))
                 outSize += 0x1;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_REDUNDANT_FLAG))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_REDUNDANT_FLAG))
                 outSize += 0x8;
             else
                 outSize += 4;
             // Data is copied unless is GAP
             if (sectorType == sector_type::ST_MODE2_XA1)
                 outSize += 0x800;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_EDC))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_EDC))
                 outSize += 0x4;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_ECC))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_ECC))
                 outSize += 0x114;
             break;
 
         case sector_type::ST_MODE2_XA2:
         case sector_type::ST_MODE2_XA2_GAP:
             mLogger->trace("MODE2 XA2 Detected.");
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_SYNC))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_SYNC))
                 outSize += 0xC;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MSF))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MSF))
                 outSize += 0x3;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_MODE))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_MODE))
                 outSize += 0x1;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_REDUNDANT_FLAG))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_REDUNDANT_FLAG))
                 outSize += 0x8;
             else
                 outSize += 4;
             // Data is copied unless is GAP
             if (sectorType == sector_type::ST_MODE2_XA2)
                 outSize += 0x914;
-            if (!static_cast<uint8_t>(opts & optimizations::OO_REMOVE_EDC))
+            if (!std::to_underlying(opts & optimizations::OO_REMOVE_EDC))
                 outSize += 0x4;
             break;
 
@@ -627,7 +629,7 @@ namespace ecmlib
         // OO_REMOVE_REDUNDANT_FLAG
         //
         //
-        if (static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_REDUNDANT_FLAG) &&
+        if (std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_REDUNDANT_FLAG) &&
             (_lastEncodedType == sector_type::ST_MODE2_XA_GAP ||
              _lastEncodedType == sector_type::ST_MODE2_XA1 ||
              _lastEncodedType == sector_type::ST_MODE2_XA1_GAP ||
@@ -655,7 +657,7 @@ namespace ecmlib
         // OO_REMOVE_EDC
         //
         //
-        if (static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_EDC) &&
+        if (std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_EDC) &&
             (_lastEncodedType == sector_type::ST_MODE1 ||
              _lastEncodedType == sector_type::ST_MODE1_GAP ||
              _lastEncodedType == sector_type::ST_MODE2_XA_GAP ||
@@ -672,8 +674,9 @@ namespace ecmlib
 
             switch (_lastEncodedType)
             {
-            case sector_type::ST_MODE1:
-            case sector_type::ST_MODE1_GAP:
+                using enum ecmlib::sector_type;
+            case ST_MODE1:
+            case ST_MODE1_GAP:
                 calculatedEDC = edc_compute(buffer, 0x810);
                 recoveredEDC = get32lsb(buffer + 0x810);
                 if (calculatedEDC != recoveredEDC)
@@ -682,9 +685,9 @@ namespace ecmlib
                 }
                 break;
 
-            case sector_type::ST_MODE2_XA1:
-            case sector_type::ST_MODE2_XA1_GAP:
-            case sector_type::ST_MODE2_XA_GAP:
+            case ST_MODE2_XA1:
+            case ST_MODE2_XA1_GAP:
+            case ST_MODE2_XA_GAP:
                 calculatedEDC = edc_compute(buffer + 0x10, 0x808);
                 recoveredEDC = get32lsb(buffer + 0x818);
                 if (calculatedEDC != recoveredEDC)
@@ -693,8 +696,8 @@ namespace ecmlib
                 }
                 break;
 
-            case sector_type::ST_MODE2_XA2:
-            case sector_type::ST_MODE2_XA2_GAP:
+            case ST_MODE2_XA2:
+            case ST_MODE2_XA2_GAP:
                 calculatedEDC = edc_compute(buffer + 0x10, 0x91C);
                 recoveredEDC = get32lsb(buffer + 0x92C);
                 if (calculatedEDC != recoveredEDC)
@@ -723,7 +726,7 @@ namespace ecmlib
         // OO_REMOVE_BLANKS
         //
         //
-        if (static_cast<uint8_t>(_lastOptimizations & optimizations::OO_REMOVE_BLANKS) &&
+        if (std::to_underlying(_lastOptimizations & optimizations::OO_REMOVE_BLANKS) &&
             (_lastEncodedType == sector_type::ST_MODE1 ||
              _lastEncodedType == sector_type::ST_MODE1_GAP))
         {

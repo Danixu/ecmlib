@@ -1,5 +1,4 @@
 #include "ecmlib.base.hpp"
-#include <spdlog/sinks/stdout_sinks.h>
 
 namespace ecmlib
 {
@@ -24,12 +23,15 @@ namespace ecmlib
 
         // Generate the ECM edc and ecc data
         mLogger->trace("Generating required ecc and edc data.");
+        ecc_f_lut.resize(256);
+        ecc_b_lut.resize(256);
+        edc_lut.resize(256);
         for (size_t i = 0; i < 256; i++)
         {
-            uint32_t edc = i;
+            auto edc = (uint32_t)i;
             size_t j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
-            ecc_f_lut[i] = j;
-            ecc_b_lut[i ^ j] = i;
+            ecc_f_lut[i] = (uint8_t)j;
+            ecc_b_lut[i ^ j] = (uint8_t)i;
             for (j = 0; j < 8; j++)
             {
                 edc = (edc >> 1) ^ (edc & 1 ? 0xD8018001 : 0);
@@ -130,7 +132,7 @@ namespace ecmlib
     int8_t base::ecc_check_sector(
         const uint8_t *address,
         const uint8_t *data,
-        const uint8_t *ecc)
+        const uint8_t *ecc) const
     {
         return ecc_checkpq(address, data, 86, 24, 2, 86, ecc) &&       // P
                ecc_checkpq(address, data, 52, 43, 86, 88, ecc + 0xAC); // Q
@@ -139,7 +141,7 @@ namespace ecmlib
     void base::ecc_write_sector(
         const uint8_t *address,
         const uint8_t *data,
-        uint8_t *ecc)
+        uint8_t *ecc) const
     {
         ecc_write_pq(address, data, 86, 24, 2, 86, ecc);         // P
         ecc_write_pq(address, data, 52, 43, 86, 88, ecc + 0xAC); // Q

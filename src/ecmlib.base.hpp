@@ -93,6 +93,7 @@
 #include <vector>
 #include <utility>
 #include "spdlog/spdlog.h"
+#include <spdlog/sinks/stdout_sinks.h>
 
 #ifndef __ECMLIB_BASE_H__
 #define __ECMLIB_BASE_H__
@@ -145,52 +146,32 @@ namespace ecmlib
 
     optimizations inline operator&(optimizations a, optimizations b)
     {
-        return static_cast<optimizations>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
+        return static_cast<optimizations>(static_cast<std::byte>(a) & static_cast<std::byte>(b));
     }
     optimizations inline operator|(optimizations a, optimizations b)
     {
-        return static_cast<optimizations>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+        return static_cast<optimizations>(static_cast<std::byte>(a) | static_cast<std::byte>(b));
     }
     optimizations inline operator^=(optimizations a, optimizations b)
     {
-        return static_cast<optimizations>(static_cast<uint8_t>(a) ^ static_cast<uint8_t>(b));
+        return static_cast<optimizations>(static_cast<std::byte>(a) ^ static_cast<std::byte>(b));
     }
 
     class base
     {
     public:
         base();
+        virtual ~base() = default;
         virtual status_code load(char *buffer, uint16_t toRead) { return status_code::STATUS_ERROR_UNKNOWN_ERROR; };
 
         // Methods
         static std::string logger_name();
 
     protected:
-        // Logging
-        std::shared_ptr<spdlog::logger> mLogger;
-
         // ecm tools inline functions
-        static inline uint32_t get32lsb(const char *src)
-        {
-            return (uint32_t)(static_cast<uint8_t>(src[0]) << 0 |
-                              static_cast<uint8_t>(src[1]) << 8 |
-                              static_cast<uint8_t>(src[2]) << 16 |
-                              static_cast<uint8_t>(src[3]) << 24);
-        }
-
-        static inline void put32lsb(
-            char *output,
-            uint32_t value)
-        {
-            output[0] = (char)(value);
-            output[1] = (char)(value >> 8);
-            output[2] = (char)(value >> 16);
-            output[3] = (char)(value >> 24);
-        }
-
         inline uint32_t edc_compute(
             const char *src,
-            size_t size)
+            size_t size) const
         {
             uint32_t edc = 0;
             for (; size; size--)
@@ -212,7 +193,7 @@ namespace ecmlib
         int8_t ecc_check_sector(
             const uint8_t *address,
             const uint8_t *data,
-            const uint8_t *ecc);
+            const uint8_t *ecc) const;
         void ecc_write_pq(
             const uint8_t *address,
             const uint8_t *data,
@@ -224,13 +205,16 @@ namespace ecmlib
         void ecc_write_sector(
             const uint8_t *address,
             const uint8_t *data,
-            uint8_t *ecc);
+            uint8_t *ecc) const;
 
     private:
+        // Logging
+        std::shared_ptr<spdlog::logger> mLogger;
+
         // LUTs used for computing ECC/EDC
-        uint8_t ecc_f_lut[256];
-        uint8_t ecc_b_lut[256];
-        uint32_t edc_lut[256];
+        std::vector<uint8_t> ecc_f_lut;
+        std::vector<uint8_t> ecc_b_lut;
+        std::vector<uint32_t> edc_lut;
     };
 }
 

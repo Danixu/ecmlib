@@ -8,6 +8,18 @@ namespace ecmlib
      */
     encoder::encoder() : base()
     {
+        // Initialize the logger
+        mLogger = spdlog::get(ecmLoggerName);
+        // Check if the logger exists or segfault will happen when used
+        if (mLogger == nullptr)
+        {
+            // Doesn't exists, so a new logger with level off will be created.
+            auto libLogger = spdlog::stdout_logger_mt(ecmLoggerName);
+            libLogger->set_level(spdlog::level::off);
+            // Return the new created logger
+            mLogger = spdlog::get(ecmLoggerName);
+        }
+
         mLogger->debug("Initializing encoder class.");
 
         mLogger->debug("Finished the encoder class inizialization.");
@@ -393,7 +405,7 @@ namespace ecmlib
                 // Might be Mode 2, XA 1 or 2
                 //
                 mLogger->trace("Mode 2 sector detected. Determining if XA 1 or XA 2.");
-                if (ecc_check_sector(zeroaddress,
+                if (ecc_check_sector(zeroaddress.data(),
                                      reinterpret_cast<uint8_t *>(inputSector + 0x10),
                                      reinterpret_cast<uint8_t *>(inputSector + 0x81C)) &&
                     edc_compute(inputSector + 0x10, 0x808) == get32lsb(inputSector + 0x818))

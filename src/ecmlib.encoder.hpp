@@ -50,11 +50,23 @@ namespace ecmlib
         optimizations get_encoded_optimizations();
 
     private:
+        // Logging
+        std::shared_ptr<spdlog::logger> mLogger;
+
         // ECM variables
-        const uint8_t zeroaddress[4] = {0, 0, 0, 0};
+        const std::vector<uint8_t> zeroaddress = {0, 0, 0, 0};
         sector_data_link _sectorDataLink;
         sector_type _lastEncodedType = sector_type::ST_UNKNOWN;
         optimizations _lastOptimizations = optimizations::OO_NONE;
+
+        // ecm tools inline functions
+        static inline uint32_t get32lsb(const char *src)
+        {
+            return (uint32_t)(static_cast<uint8_t>(src[0]) << 0 |
+                              static_cast<uint8_t>(src[1]) << 8 |
+                              static_cast<uint8_t>(src[2]) << 16 |
+                              static_cast<uint8_t>(src[3]) << 24);
+        }
 
         // Methods
         bool inline is_gap(

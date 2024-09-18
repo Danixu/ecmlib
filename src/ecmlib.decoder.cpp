@@ -8,6 +8,18 @@ namespace ecmlib
      */
     decoder::decoder() : base()
     {
+        // Initialize the logger
+        mLogger = spdlog::get(ecmLoggerName);
+        // Check if the logger exists or segfault will happen when used
+        if (mLogger == nullptr)
+        {
+            // Doesn't exists, so a new logger with level off will be created.
+            auto libLogger = spdlog::stdout_logger_mt(ecmLoggerName);
+            libLogger->set_level(spdlog::level::off);
+            // Return the new created logger
+            mLogger = spdlog::get(ecmLoggerName);
+        }
+
         mLogger->debug("Initializing decoder class.");
 
         mLogger->debug("Finished the decoder class inizialization.");
@@ -400,7 +412,7 @@ namespace ecmlib
                 case sector_type::ST_MODE2_XA1_GAP:
                 case sector_type::ST_MODE2_XA_GAP:
                     ecc_write_sector(
-                        zeroaddress,
+                        zeroaddress.data(),
                         reinterpret_cast<uint8_t *>(outBuffer + 0x10),
                         reinterpret_cast<uint8_t *>(outBuffer + 0x81C));
                     break;

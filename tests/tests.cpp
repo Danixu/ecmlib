@@ -10,7 +10,7 @@
 #include <openssl/evp.h>
 
 // create loggers
-auto appLogger = spdlog::stdout_logger_mt("app_logger");
+auto const appLogger = spdlog::stdout_logger_mt("app_logger");
 
 std::string hash_message(const unsigned char *message, size_t message_len, const EVP_MD *hashtype)
 {

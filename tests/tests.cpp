@@ -223,14 +223,14 @@ int main(int argc, char *argv[])
 
         ecmEncoder.load(inBuffer.data(), (uint16_t)inBuffer.size());
         ecmlib::sector_type sectorType = ecmEncoder.get_sector_type(inBuffer.data());
-        appLogger->info("The expected type is {} and the detected type is {}.", static_cast<uint8_t>(filesToCheck[i].type), static_cast<uint8_t>(sectorType));
+        appLogger->info("The expected type is {} and the detected type is {}.", std::to_underlying(filesToCheck[i].type), std::to_underlying(sectorType));
         if (sectorType == filesToCheck[i].type)
         {
             appLogger->info("The detected sector type matches.");
         }
         else
         {
-            appLogger->error("The detected sector type doesn't matches the expected one ({}).", static_cast<uint8_t>(filesToCheck[i].type));
+            appLogger->error("The detected sector type doesn't matches the expected one ({}).", std::to_underlying(filesToCheck[i].type));
             return 1;
         }
 
@@ -246,17 +246,17 @@ int main(int argc, char *argv[])
             encFile.close();
 
             // Check the CRC
-            appLogger->debug("Encoder: Checking the hash of the file with the optimizations {}.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
+            appLogger->debug("Encoder: Checking the hash of the file with the optimizations {}.", std::to_underlying(filesToCheck[i].opts[j]));
             std::string encodedHASH = hash_message((unsigned char *)encodedBuffer.data(), encodedSize, EVP_md5());
             appLogger->trace("Encoder: Detected HASH: {} - Original HASH: {}", encodedHASH, filesToCheck[i].opts_hash[j]);
             if (encodedHASH != filesToCheck[i].opts_hash[j])
             {
-                appLogger->error("The encoded file CRC with the optimizations {} doesn't matches.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
+                appLogger->error("The encoded file CRC with the optimizations {} doesn't matches.", std::to_underlying(filesToCheck[i].opts[j]));
                 return 1;
             }
             else
             {
-                appLogger->debug("The encoded file CRC with the optimizations {} is correct.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
+                appLogger->debug("The encoded file CRC with the optimizations {} is correct.", std::to_underlying(filesToCheck[i].opts[j]));
             }
 
             // Decode the data and check if original file can be recovered
@@ -267,17 +267,17 @@ int main(int argc, char *argv[])
             decFile.write(decodedBuffer.data(), decodedBuffer.size());
             decFile.close();
 
-            appLogger->debug("Decoder: Checking the hash of the file with the optimizations {}.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
+            appLogger->debug("Decoder: Checking the hash of the file with the optimizations {}.", std::to_underlying(filesToCheck[i].opts[j]));
             std::string decodedHASH = hash_message((unsigned char *)decodedBuffer.data(), decodedBuffer.size(), EVP_md5());
             appLogger->trace("Decoder: Detected HASH: {} - Original HASH: {}", decodedHASH, filesToCheck[i].hash);
             if (decodedHASH != filesToCheck[i].hash)
             {
-                appLogger->error("The decoded file CRC with the optimizations {} doesn't matches.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
+                appLogger->error("The decoded file CRC with the optimizations {} doesn't matches.", std::to_underlying(filesToCheck[i].opts[j]));
                 return 1;
             }
             else
             {
-                appLogger->debug("The decoded file CRC with the optimizations {} is correct.", static_cast<uint8_t>(filesToCheck[i].opts[j]));
+                appLogger->debug("The decoded file CRC with the optimizations {} is correct.", std::to_underlying(filesToCheck[i].opts[j]));
             }
         }
     }
